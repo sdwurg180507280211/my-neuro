@@ -67,6 +67,22 @@ class LLMClient {
             throw new Error(`请求格式错误: ${jsonError.message}`);
         }
 
+        // 禁用代理，避免请求被代理干扰（国内API不需要走代理）
+        const originalEnv = {
+            http_proxy: process.env.http_proxy,
+            https_proxy: process.env.https_proxy,
+            HTTP_PROXY: process.env.HTTP_PROXY,
+            HTTPS_PROXY: process.env.HTTPS_PROXY,
+            all_proxy: process.env.all_proxy,
+            ALL_PROXY: process.env.ALL_PROXY,
+        };
+        delete process.env.http_proxy;
+        delete process.env.https_proxy;
+        delete process.env.HTTP_PROXY;
+        delete process.env.HTTPS_PROXY;
+        delete process.env.all_proxy;
+        delete process.env.ALL_PROXY;
+
         try {
             const response = await fetch(`${this.apiUrl}/chat/completions`, {
                 method: 'POST',
@@ -125,6 +141,13 @@ class LLMClient {
         } catch (error) {
             logToTerminal('error', `LLM API调用失败: ${error.message}`);
             throw error;
+        } finally {
+            // 恢复环境变量
+            Object.entries(originalEnv).forEach(([key, value]) => {
+                if (value !== undefined) {
+                    process.env[key] = value;
+                }
+            });
         }
     }
 

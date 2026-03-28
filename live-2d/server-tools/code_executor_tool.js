@@ -4,6 +4,7 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { buildPythonCommand, getPythonCommand } = require('./python-helper');
 
 /**
  * 执行AI生成的Python代码，支持各种编程任务
@@ -90,15 +91,9 @@ if __name__ == '__main__':
             // 写入Python脚本
             fs.writeFileSync(tempScriptPath, wrappedCode);
 
-            // 执行Python脚本 - 支持conda环境
+            // 执行Python脚本 - 自动检测环境
+            const command = buildPythonCommand(tempScriptPath);
             const isWindows = process.platform === 'win32';
-            let command;
-
-            if (isWindows) {
-                command = `call conda activate my-neuro && python "${tempScriptPath}"`;
-            } else {
-                command = `source activate my-neuro && python "${tempScriptPath}"`;
-            }
 
             const execOptions = {
                 timeout: 60000, // 60秒超时
@@ -160,14 +155,10 @@ async function installPackages({packages}) {
     }
 
     return new Promise((resolve, reject) => {
+        const { prefix } = getPythonCommand();
         const isWindows = process.platform === 'win32';
-        let command;
-
-        if (isWindows) {
-            command = `call conda activate my-neuro && pip install ${packages}`;
-        } else {
-            command = `source activate my-neuro && pip install ${packages}`;
-        }
+        const pipCmd = isWindows ? 'pip' : 'pip3';
+        const command = `${prefix}${pipCmd} install ${packages}`;
 
         const execOptions = {
             timeout: 300000, // 5分钟超时

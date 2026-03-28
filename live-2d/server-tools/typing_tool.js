@@ -4,6 +4,7 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { buildPythonCommand } = require('./python-helper');
 
 // Python脚本模板
 const PYTHON_SCRIPT_TEMPLATE = `# -*- coding: utf-8 -*-
@@ -71,19 +72,11 @@ async function typeText({text, submit = false}) {
             // 写入Python脚本
             fs.writeFileSync(tempScriptPath, PYTHON_SCRIPT_TEMPLATE);
 
-            // 执行Python脚本，使用JSON转义处理特殊字符 - 支持conda环境
+            // 执行Python脚本，使用JSON转义处理特殊字符
             const escapedText = JSON.stringify(text);
             const submitParam = submit ? 'true' : 'false';
+            const command = buildPythonCommand(tempScriptPath, `${escapedText} ${submitParam}`);
             const isWindows = process.platform === 'win32';
-            let command;
-
-            if (isWindows) {
-                // Windows系统，使用call命令确保conda正确激活
-                command = `call conda activate my-neuro && python "${tempScriptPath}" ${escapedText} ${submitParam}`;
-            } else {
-                // 非Windows系统
-                command = `source activate my-neuro && python "${tempScriptPath}" ${escapedText} ${submitParam}`;
-            }
 
             const execOptions = {
                 timeout: 10000,

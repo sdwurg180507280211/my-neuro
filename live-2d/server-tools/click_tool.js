@@ -4,6 +4,7 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { buildPythonCommand } = require('./python-helper');
 
 async function clickMouse() {
     return new Promise((resolve, reject) => {
@@ -18,10 +19,8 @@ print("点击完成")
 
         fs.writeFileSync(tempScriptPath, code);
 
+        const command = buildPythonCommand(tempScriptPath);
         const isWindows = process.platform === 'win32';
-        const command = isWindows
-            ? `call conda activate my-neuro && python "${tempScriptPath}"`
-            : `source activate my-neuro && python "${tempScriptPath}"`;
 
         const execOptions = {
             timeout: 10000,

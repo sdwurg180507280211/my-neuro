@@ -4,6 +4,7 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { buildPythonCommand } = require('./python-helper');
 
 // Python脚本模板
 const PYTHON_SCRIPT_TEMPLATE = `# -*- coding: utf-8 -*-
@@ -72,14 +73,8 @@ async function pressArrow({direction}) {
             // 写入Python脚本
             fs.writeFileSync(tempScriptPath, PYTHON_SCRIPT_TEMPLATE);
 
+            const command = buildPythonCommand(tempScriptPath, direction);
             const isWindows = process.platform === 'win32';
-            let command;
-
-            if (isWindows) {
-                command = `call conda activate my-neuro && python "${tempScriptPath}" ${direction}`;
-            } else {
-                command = `source activate my-neuro && python "${tempScriptPath}" ${direction}`;
-            }
 
             const execOptions = {
                 timeout: 10000,
