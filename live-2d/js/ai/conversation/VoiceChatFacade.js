@@ -30,10 +30,11 @@ class VoiceChatFacade {
         this.MODEL = config.llm.model;
 
         // ASR相关属性（暴露给外部使用）
-        // ASR启用：本地ASR或百度流式ASR任一启用即可
+        // ASR启用：本地ASR或百度流式ASR或火山引擎ASR任一启用即可
         const localASREnabled = config.asr?.enabled !== false;
         const baiduASREnabled = config.cloud?.baidu_asr?.enabled === true;
-        this.asrEnabled = localASREnabled || baiduASREnabled;
+        const volcASREnabled = config.cloud?.volc_asr?.enabled === true;
+        this.asrEnabled = localASREnabled || baiduASREnabled || volcASREnabled;
         this.voiceBargeInEnabled = config.asr?.voice_barge_in || false;
 
         // 截图相关属性

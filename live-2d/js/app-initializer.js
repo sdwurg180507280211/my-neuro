@@ -51,10 +51,11 @@ class AppInitializer {
 
         console.log('🔊 TTS启用状态:', { local: localTTSEnabled, aliyun: aliyunTTSEnabled, volc: volcTTSEnabled, cloud: cloudTTSEnabled, final: this.ttsEnabled });
 
-        // ASR启用：本地ASR或百度流式ASR任一启用即可
+        // ASR启用：本地ASR或百度流式ASR或火山引擎ASR任一启用即可
         const localASREnabled = config.asr?.enabled !== false;
         const baiduASREnabled = config.cloud?.baidu_asr?.enabled === true;
-        this.asrEnabled = localASREnabled || baiduASREnabled;
+        const volcASREnabled = config.cloud?.volc_asr?.enabled === true;
+        this.asrEnabled = localASREnabled || baiduASREnabled || volcASREnabled;
         this.INTRO_TEXT = config.ui.intro_text || "你好，我叫fake neuro。";
     }
 

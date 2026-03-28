@@ -14,7 +14,12 @@ class ScreenshotManager {
 
         const useBaiduASR = voiceChatInterface.config?.cloud?.baidu_asr?.enabled === true;
 
-        if (useBaiduASR) {
+        if (bertConfig.enabled === false) {
+            // 配置中明确禁用BERT
+            this.bertEnabled = false;
+            this.bertUrl = null;
+            this.bertApiKey = null;
+        } else if (useBaiduASR) {
             // 百度ASR不走BERT
             this.bertEnabled = false;
             this.bertUrl = null;

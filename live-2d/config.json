@@ -71,11 +71,18 @@
       "speed": 1
     },
     "baidu_asr": {
-      "enabled": true,
+      "enabled": false,
       "url": "ws://vop.baidu.com/realtime_asr",
       "appid": 122623684,
       "appkey": "L17wW9HVM7TWLZMhSWhDMDOu",
       "dev_pid": 15372
+    },
+    "volc_asr": {
+      "enabled": true,
+      "appid": "7042321381",
+      "accesskey": "OZTjf5tPhXCqdHH3n5O_MXhMHaSU9ThD",
+      "resource_id": "volc.bigasr.sauc.duration",
+      "language": ""
     }
   },
   "game": {
@@ -94,8 +101,8 @@
     "auto_show_chat_on_text_mode": true,
     "hide_from_screenshot": true,
     "model_position": {
-      "x": 1.493316941328455,
-      "y": 1.3204371601532134,
+      "x": 1.4931834269241582,
+      "y": 1.1197330124696918,
       "remember_position": true
     }
   },
