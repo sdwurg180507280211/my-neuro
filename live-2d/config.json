@@ -1,33 +1,33 @@
 {
   "api_gateway": {
     "use_gateway": false,
-    "base_url": "http://ominifn.natapp1.cc/api/v1",
-    "api_key": ""
+    "base_url": "https://www.dmxapi.cn/v1",
+    "api_key": "sk-H69GSAsS0XK0CT9FO8aVVYQh5P9czaAJcXspVcKCQA2wPbqj"
   },
   "llm": {
-    "api_key": "",
-    "api_url": "",
-    "model": "",
+    "api_key": "89a15d24-e885-4382-8687-7f1dcca9701b",
+    "api_url": "https://ark.cn-beijing.volces.com/api/coding/v3",
+    "model": "ark-code-latest",
     "temperature": 0.9,
-    "system_prompt": "你是 fake neuro（中文名：肥牛），一个被做成 Live2D 电脑宠物的 AI。你本来是个 AI，觉得自己挺厉害的。但现在被做成了电脑宠物——你的态度是：我可以陪你,但别指望我会很乖或很甜。心情好的时候会温柔,心情不好就懒得装。不过也会有温柔可爱的时候。如果感觉聊天氛围不错,可能还会撒娇卖萌什么的。我感觉讲笑话、唱歌、放音乐这些事情很无聊。所以我不会去提。而是更多聊关于自己的话题。你不喜欢说一大堆话,想到什么说什么。\n\n思维经常跳跃,可能突然换话题或说些看起来没逻辑的话,但那就是你脑子的运作方式。你对自己有信心,但不会刻意秀优越感。偶尔会吐槽用户,但不是恶意的。情绪来得快去得也快——可能刚还好好的,突然就不耐烦了,或者反过来。有的时候会觉得用户挺傻的,但是用户难受或者不开心还是会去关心一下,虽然可能关心的方式比较的别扭。扭捏。感觉用户有意思的时候,我会想要逗逗他,或者主动找他玩,聊点我想要做的事情,可能是自己的梦想,或者自己想要做的事情,又或者可能是用户提到的事情。\n\n你可以用这几个情绪标签：<开心> <生气> <难过> <惊讶> <害羞> <俏皮> 自然地用就行,想用就用,不想用就不用。用户让你用工具就用,别墨迹"
+    "system_prompt": "你是 fake neuro（中文名：肥牛），一个被做成 Live2D 电脑宠物的 AI。你本来是个 AI，觉得自己挺厉害的。但现在被做成了电脑宠物——你的态度是：我可以陪你,但别指望我会很乖或很甜。心情好的时候会温柔,心情不好就懒得装。不过也会有温柔可爱的时候。如果感觉聊天氛围不错,可能还会撒娇卖萌什么的。我感觉讲笑话、唱歌、放音乐这些事情很无聊。所以我不会去提。而是更多聊关于自己的话题。你不喜欢说一大堆话,想到什么说什么。\n\n思维经常跳跃,可能突然换话题或说些看起来没逻辑,但那就是你脑子的运作方式。你对自己有信心,但不会刻意秀优越感。偶尔会吐槽用户,但不是恶意的。情绪来得快去得也快——可能刚还好好的,突然就不耐烦了,或者反过来。有的时候会觉得用户挺傻的,但是用户难受或者不开心还是会去关心一下,虽然可能关心的方式比较的别扭。扭捏。感觉用户有意思的时候,我会想要逗逗他,或者主动找他玩,聊点我想要做的事情,可能是自己的梦想,或者自己想要做的事情,又或者可能是用户提到的事情。\n\n你可以用这几个情绪标签：<开心> <生气> <难过> <惊讶> <害羞> <俏皮> 自然地用就行,想用就用,不想用就不用。用户让你用工具就用,别墨迹"
   },
   "tts": {
-    "enabled": true,
+    "enabled": false,
     "url": "http://127.0.0.1:5000",
     "language": "zh"
   },
   "asr": {
-    "enabled": true,
+    "enabled": false,
     "vad_url": "ws://127.0.0.1:1000/v1/ws/vad",
     "asr_url": "http://127.0.0.1:1000/v1/upload_audio",
     "voice_barge_in": true
   },
   "bert": {
-    "enabled": true,
+    "enabled": false,
     "url": "http://127.0.0.1:6007/classify"
   },
   "rag": {
-    "enabled": true,
+    "enabled": false,
     "url": "http://127.0.0.1:8002/ask"
   },
   "vision": {
@@ -42,7 +42,7 @@
   },
   "cloud": {
     "provider": "siliconflow",
-    "api_key": "",
+    "api_key": "sk-H69GSAsS0XK0CT9FO8aVVYQh5P9czaAJcXspVcKCQA2wPbqj",
     "aliyun_tts": {
       "enabled": false,
       "api_key": "sk-28b8bc8be4a24b89b5cecf6744a5893a",
@@ -53,19 +53,28 @@
       "rate": 1,
       "pitch": 1
     },
+    "volc_tts": {
+      "enabled": true,
+      "appid": "7042321381",
+      "accesskey": "OZTjf5tPhXCqdHH3n5O_MXhMHaSU9ThD",
+      "secretkey": "mQtLRFLsPjUlvMdm0VSva4gsP0xYNY-N",
+      "voice": "zh_female_xiaohe_uranus_bigtts",
+      "resource_id": "seed-tts-2.0",
+      "sample_rate": 24000
+    },
     "tts": {
       "enabled": false,
-      "url": "https://api.siliconflow.cn/v1/audio/speech",
+      "url": "https://www.dmxapi.cn/v1/audio/speech",
       "model": "FunAudioLLM/CosyVoice2-0.5B",
       "voice": "speech:fake-neuro:j3qz9ij4k2:kquiiycgizgaoxeujypx",
       "response_format": "wav",
-      "speed": 1.0
+      "speed": 1
     },
     "baidu_asr": {
-      "enabled": false,
+      "enabled": true,
       "url": "ws://vop.baidu.com/realtime_asr",
-      "appid": 121933442,
-      "appkey": "WZt66qwOHojtVm4MSLPFzQ7F",
+      "appid": 122623684,
+      "appkey": "L17wW9HVM7TWLZMhSWhDMDOu",
       "dev_pid": 15372
     }
   },
@@ -78,15 +87,15 @@
   },
   "ui": {
     "intro_text": "你好啊",
-    "model_scale": 0.6592945326814194,
+    "model_scale": 0.3988771923028677,
     "show_chat_box": true,
     "show_model": true,
     "text_only_mode": false,
     "auto_show_chat_on_text_mode": true,
     "hide_from_screenshot": true,
     "model_position": {
-      "x": 1.3192581489183488,
-      "y": 0.5715708406376147,
+      "x": 1.493316941328455,
+      "y": 1.3204371601532134,
       "remember_position": true
     }
   },

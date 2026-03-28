@@ -49,6 +49,10 @@ function createWindow () {
     win.setMenu(null)
     win.setPosition(0, 0)
     win.loadFile('index.html')
+
+    // 打开开发者工具用于调试
+    win.webContents.openDevTools({ mode: 'detach' })
+
     win.on('minimize', (event) => {
         event.preventDefault()
         win.restore()

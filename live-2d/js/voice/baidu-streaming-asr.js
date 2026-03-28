@@ -149,10 +149,28 @@ class BaiduStreamingASR {
             } else if (result.type === 'FIN_TEXT') {
                 const finalText = result.result || '';
 
+                const fs = require('fs');
+                const logMsg = `[${new Date().toISOString()}] 百度ASR识别: ${finalText}, 回调存在: ${!!this.onSpeechRecognized}\n`;
+                fs.appendFileSync('/Users/edy/asr-debug.log', logMsg);
+
+                console.log('🎯 百度ASR识别完成:', finalText);
+                console.log('🎯 onSpeechRecognized 回调存在:', !!this.onSpeechRecognized);
+
                 if (finalText && this.onSpeechRecognized) {
+                    console.log('✅ 调用 onSpeechRecognized 回调');
+                    fs.appendFileSync('/Users/edy/asr-debug.log', `[${new Date().toISOString()}] 调用回调\n`);
                     this.hasInterruptedThisSession = false;
                     this.currentInterimText = '';
+
+                    // 🔥 关键修复：识别完成后只解锁 asrLocked，保持 isRecording = true
+                    // 百度流式 ASR 是持续录音模式，不要停止录音
+                    this.asrLocked = false;
+
                     this.onSpeechRecognized(finalText);
+                } else {
+                    console.log('❌ 未调用回调 - finalText:', finalText, 'callback:', !!this.onSpeechRecognized);
+                    fs.appendFileSync('/Users/edy/asr-debug.log', `[${new Date().toISOString()}] 未调用回调\n`);
+                    this.asrLocked = false;
                 }
 
             } else if (result.err_no !== undefined && result.err_no !== 0) {

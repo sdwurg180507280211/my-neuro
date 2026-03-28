@@ -42,7 +42,15 @@ class AppInitializer {
         this.pluginManager = null;
 
         // 配置标志
-        this.ttsEnabled = config.tts?.enabled !== false;
+        // TTS启用：本地TTS、阿里云TTS、火山TTS、云端TTS 任一启用即可
+        const localTTSEnabled = config.tts?.enabled !== false;
+        const aliyunTTSEnabled = config.cloud?.aliyun_tts?.enabled === true;
+        const volcTTSEnabled = config.cloud?.volc_tts?.enabled === true;
+        const cloudTTSEnabled = config.cloud?.tts?.enabled === true;
+        this.ttsEnabled = localTTSEnabled || aliyunTTSEnabled || volcTTSEnabled || cloudTTSEnabled;
+
+        console.log('🔊 TTS启用状态:', { local: localTTSEnabled, aliyun: aliyunTTSEnabled, volc: volcTTSEnabled, cloud: cloudTTSEnabled, final: this.ttsEnabled });
+
         // ASR启用：本地ASR或百度流式ASR任一启用即可
         const localASREnabled = config.asr?.enabled !== false;
         const baiduASREnabled = config.cloud?.baidu_asr?.enabled === true;

@@ -76,6 +76,8 @@ class InputRouter {
      * 处理语音输入
      */
     async handleVoiceInput(text) {
+        console.log('🎤 InputRouter.handleVoiceInput 收到文本:', text);
+
         // 🔥 用户语音输入时：打断弹幕处理 + 清空弹幕队列
         if (this.barrageManager) {
             this.barrageManager.setInterrupt();
@@ -85,9 +87,13 @@ class InputRouter {
         // 运行插件 onUserInput 钩子
         // memos 插件：injectRelevantMemories 均在此处通过钩子触发，无需在下方重复调用
         const event = await this._runUserInputHooks(text, 'voice');
-        if (event._defaultPrevented) return; // 插件自行处理，跳过 LLM
+        if (event._defaultPrevented) {
+            console.log('⚠️ 插件阻止了默认处理，跳过 LLM');
+            return;
+        }
 
         const finalText = event.text;
+        console.log('📝 处理后的文本:', finalText);
 
         // 处理插件追加的上下文
         const contextAdditions = event.getContextAdditions();
@@ -95,8 +101,12 @@ class InputRouter {
             ? finalText + '\n\n' + contextAdditions.join('\n')
             : finalText;
 
+        console.log('🚀 准备发送到 LLM:', promptWithContext);
+
         // 发送到LLM
         await this.llmHandler(promptWithContext);
+
+        console.log('✅ LLM 处理完成');
 
         // 保存到记忆库
         this.saveToMemoryLog();

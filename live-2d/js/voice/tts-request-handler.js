@@ -33,6 +33,24 @@ class TTSRequestHandler {
         this.aliyunRate = aliyunTts.rate ?? 1;
         this.aliyunPitch = aliyunTts.pitch ?? 1;
 
+        // 火山引擎豆包TTS配置
+        const volcTts = config.cloud?.volc_tts || {};
+        this.volcTtsEnabled = volcTts.enabled || false;
+        this.volcAppId = volcTts.appid || "";
+        this.volcAccessKey = volcTts.accesskey || "";
+        this.volcSecretKey = volcTts.secretkey || "";
+        this.volcVoice = volcTts.voice || "";
+        this.volcResourceId = volcTts.resource_id || "seed-tts-2.0";
+        this.volcSampleRate = volcTts.sample_rate || 24000;
+
+        console.log('🔊 火山TTS配置:', {
+            enabled: this.volcTtsEnabled,
+            appid: this.volcAppId,
+            accesskey: this.volcAccessKey ? this.volcAccessKey.substring(0, 10) + '...' : '未配置',
+            resource_id: this.volcResourceId,
+            voice: this.volcVoice
+        });
+
         // 云服务商配置（SiliconFlow等，保留兼容）
         this.cloudTtsEnabled = config.cloud?.tts?.enabled || false;
         this.cloudTtsUrl = config.cloud?.tts?.url || "";
@@ -76,7 +94,7 @@ class TTSRequestHandler {
                         { role: 'user', content: text }
                     ],
                     stream: false
-                })
+                }),
             });
 
             if (!response.ok) throw new Error(`翻译API错误: ${response.status}`);
@@ -113,7 +131,15 @@ class TTSRequestHandler {
                 : await this.translateText(textForTTS);
 
             // 调用TTS API
-            if (this.aliyunTtsEnabled) {
+            if (this.volcTtsEnabled) {
+                console.log('🎤 使用火山引擎豆包TTS');
+                // 火山引擎豆包TTS（WebSocket二进制双向流式）
+                const audioBuffer = await this.volcTtsSynthesize(finalTextForTTS, controller.signal);
+                if (!audioBuffer) return null;
+                // 火山返回原始PCM，需要包装成WAV容器
+                const wavBuffer = this.pcmToWav(audioBuffer, this.volcSampleRate, 1);
+                return new Blob([wavBuffer], { type: 'audio/wav' });
+            } else if (this.aliyunTtsEnabled) {
                 // 阿里云TTS（WebSocket模式）
                 const audioBuffer = await this.aliyunSynthesize(finalTextForTTS, controller.signal);
                 if (!audioBuffer) return null;
@@ -307,6 +333,321 @@ class TTSRequestHandler {
                 }
             });
         });
+    }
+
+    // 创建火山TTS二进制帧
+    volcCreateFrame(messageType, flags, eventNumber, payloadJson, sessionId = '') {
+        const buffer = [];
+        buffer.push(0x11);
+        buffer.push((messageType << 4) | flags);
+        buffer.push(0x10);
+        buffer.push(0x00);
+
+        if ((flags & 0b0100) !== 0 && eventNumber !== null) {
+            const eventBuf = Buffer.alloc(4);
+            eventBuf.writeInt32BE(eventNumber, 0);
+            buffer.push(...eventBuf);
+        }
+
+        if ((flags & 0b0100) !== 0 && sessionId && eventNumber !== 1 && eventNumber !== 2 && eventNumber !== 50 && eventNumber !== 51) {
+            const sessionIdBuf = Buffer.from(sessionId, 'utf8');
+            const sizeBuf = Buffer.alloc(4);
+            sizeBuf.writeUInt32BE(sessionIdBuf.length, 0);
+            buffer.push(...sizeBuf);
+            if (sessionIdBuf.length > 0) {
+                buffer.push(...sessionIdBuf);
+            }
+        }
+
+        const payloadBuf = payloadJson ? Buffer.from(JSON.stringify(payloadJson), 'utf8') : Buffer.alloc(0);
+        const payloadSizeBuf = Buffer.alloc(4);
+        payloadSizeBuf.writeUInt32BE(payloadBuf.length, 0);
+        buffer.push(...payloadSizeBuf);
+        if (payloadBuf.length > 0) {
+            buffer.push(...payloadBuf);
+        }
+
+        return Buffer.from(buffer);
+    }
+
+    // 解析火山TTS二进制帧
+    volcParseFrame(buffer) {
+        const header = buffer.readUInt32BE(0);
+        const messageType = (header >> 20) & 0xF;
+        const flags = (header >> 16) & 0xF;
+        const hasEvent = (flags & 0b0100) !== 0;
+
+        let offset = 4;
+        let eventNumber = null;
+        let sessionId = null;
+
+        if (hasEvent) {
+            eventNumber = buffer.readUInt32BE(offset);
+            offset += 4;
+
+            // 读取 Session ID（如果有）
+            if (eventNumber !== 1 && eventNumber !== 2 &&
+                eventNumber !== 50 && eventNumber !== 51) {
+                const sessionIdLen = buffer.readUInt32BE(offset);
+                offset += 4;
+                if (sessionIdLen > 0) {
+                    sessionId = buffer.toString('utf8', offset, offset + sessionIdLen);
+                    offset += sessionIdLen;
+                }
+            }
+        }
+
+        // 读取 payload 长度和内容
+        const payloadLen = buffer.readUInt32BE(offset);
+        offset += 4;
+        let payload = null;
+        if (payloadLen > 0) {
+            payload = buffer.slice(offset, offset + payloadLen);
+        }
+
+        return { messageType, flags, eventNumber, sessionId, payload };
+    }
+
+    // 火山引擎豆包TTS WebSocket二进制双向流式合成
+    async volcTtsSynthesize(text, abortSignal) {
+        // 检查是否已取消
+        if (abortSignal && abortSignal.aborted) {
+            return null;
+        }
+
+        // 每次新建连接，避免状态污染（简单可靠）
+        let ws = null;
+        let settled = false;
+        const audioChunks = [];
+        const sessionId = randomUUID();
+
+        // 禁用代理，避免 WebSocket 连接被代理干扰
+        const originalEnv = {
+            http_proxy: process.env.http_proxy,
+            https_proxy: process.env.https_proxy,
+            HTTP_PROXY: process.env.HTTP_PROXY,
+            HTTPS_PROXY: process.env.HTTPS_PROXY,
+            all_proxy: process.env.all_proxy,
+            ALL_PROXY: process.env.ALL_PROXY,
+        };
+        delete process.env.http_proxy;
+        delete process.env.https_proxy;
+        delete process.env.HTTP_PROXY;
+        delete process.env.HTTPS_PROXY;
+        delete process.env.all_proxy;
+        delete process.env.ALL_PROXY;
+
+        try {
+            return await new Promise((resolve, reject) => {
+                const connectId = randomUUID().replace(/-/g, '').substring(0, 16);
+                const wsUrl = 'wss://openspeech.bytedance.com/api/v3/tts/bidirection';
+                const headers = {
+                    'X-Api-App-Key': this.volcAppId,
+                    'X-Api-Access-Key': this.volcAccessKey,
+                    'X-Api-Resource-Id': this.volcResourceId,
+                    'X-Api-Connect-Id': connectId
+                };
+
+                ws = new WebSocket(wsUrl, { headers });
+
+                // Abort 处理
+                const onAbort = () => {
+                    if (!settled) {
+                        settled = true;
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.close();
+                        }
+                        resolve(null);
+                    }
+                };
+
+                if (abortSignal) {
+                    abortSignal.addEventListener('abort', onAbort, { once: true });
+                }
+
+                const cleanup = () => {
+                    if (abortSignal) abortSignal.removeEventListener('abort', onAbort);
+                };
+
+                ws.on('open', () => {
+                    if (settled) return;
+                    logToTerminal('info', '火山TTS WebSocket已连接');
+
+                    // 1. 发送 StartConnection
+                    const startConnPayload = {};
+                    const startConnFrame = this.volcCreateFrame(0b0001, 0b0100, 1, startConnPayload);
+                    ws.send(startConnFrame);
+                });
+
+                ws.on('message', (data) => {
+                    if (settled) return;
+
+                    try {
+                        const frame = this.volcParseFrame(Buffer.from(data));
+
+                        if (frame.eventNumber === 50) {
+                            // ConnectionStarted - 发送 StartSession
+                            const startSessionPayload = {
+                                user: { uid: randomUUID() },
+                                namespace: 'BidirectionalTTS',
+                                event: 100,
+                                req_params: {
+                                    speaker: this.volcVoice,
+                                    audio_params: {
+                                        format: 'pcm',
+                                        sample_rate: this.volcSampleRate
+                                    }
+                                }
+                            };
+                            const startSessionFrame = this.volcCreateFrame(0b0001, 0b0100, 100, startSessionPayload, sessionId);
+                            ws.send(startSessionFrame);
+                        }
+                        else if (frame.eventNumber === 150) {
+                            // SessionStarted - 发送文本
+                            logToTerminal('info', '火山TTS: 会话已开始，发送请求文本');
+                            const taskPayload = {
+                                user: { uid: randomUUID() },
+                                namespace: 'BidirectionalTTS',
+                                event: 200,
+                                req_params: {
+                                    text: text,
+                                    speaker: this.volcVoice,
+                                    audio_params: {
+                                        format: 'pcm',
+                                        sample_rate: this.volcSampleRate
+                                    }
+                                }
+                            };
+                            const taskFrame = this.volcCreateFrame(0b0001, 0b0100, 200, taskPayload, sessionId);
+                            ws.send(taskFrame);
+
+                            // 发送 FinishSession
+                            const finishSessionPayload = {
+                                user: { uid: randomUUID() },
+                                namespace: 'BidirectionalTTS',
+                                event: 102
+                            };
+                            const finishSessionFrame = this.volcCreateFrame(0b0001, 0b0100, 102, finishSessionPayload, sessionId);
+                            ws.send(finishSessionFrame);
+                        }
+                        else if (frame.eventNumber === 152) {
+                            // SessionFinished - 完成
+                            logToTerminal('info', '火山TTS: 会话结束');
+                            settled = true;
+                            cleanup();
+                            ws.close();
+                            resolve(Buffer.concat(audioChunks));
+                        }
+                        else if (frame.eventNumber === 151 || frame.eventNumber === 153) {
+                            // SessionCanceled or Failed
+                            let errMsg = '火山TTS会话失败';
+                            try {
+                                const errJson = JSON.parse(frame.payload.toString('utf8'));
+                                errMsg = `火山TTS失败: ${JSON.stringify(errJson)}`;
+                            } catch(e) {}
+                            logToTerminal('error', errMsg);
+                            settled = true;
+                            cleanup();
+                            ws.close();
+                            reject(new Error(errMsg));
+                        }
+                        else if (frame.messageType === 0b1011) {
+                            // Audio-only - PCM 数据
+                            audioChunks.push(frame.payload);
+                        }
+                        else if (frame.messageType === 0b1111) {
+                            // Error
+                            let errMsg = '火山TTS错误';
+                            try {
+                                const errJson = JSON.parse(frame.payload.toString('utf8'));
+                                errMsg = `火山TTS失败: ${JSON.stringify(errJson, null, 2)}`;
+                            } catch(e) {
+                                errMsg = `火山TTS错误: ${frame.payload ? frame.payload.toString('utf8') : ''}`;
+                            }
+                            logToTerminal('error', errMsg);
+                            settled = true;
+                            cleanup();
+                            ws.close();
+                            reject(new Error(errMsg));
+                        }
+                    } catch (e) {
+                        logToTerminal('error', `火山TTS处理错误: ${e.message}`);
+                    }
+                });
+
+                ws.on('error', (err) => {
+                    if (!settled) {
+                        settled = true;
+                        cleanup();
+                        logToTerminal('error', `火山TTS WebSocket错误: ${err.message}`);
+                        reject(err);
+                    }
+                });
+
+                ws.on('close', (code) => {
+                    if (!settled) {
+                        settled = true;
+                        cleanup();
+                        if (audioChunks.length > 0) {
+                            resolve(Buffer.concat(audioChunks));
+                        } else {
+                            reject(new Error(`火山TTS连接提前关闭，code: ${code}`));
+                        }
+                    }
+                });
+            });
+        } finally {
+            // 确保连接关闭
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+            // 恢复环境变量
+            Object.entries(originalEnv).forEach(([key, value]) => {
+                if (value !== undefined) {
+                    process.env[key] = value;
+                }
+            });
+        }
+    }
+
+    // PCM原始数据转换为WAV容器
+    pcmToWav(pcmBuffer, sampleRate, channels) {
+        const bytesPerSample = 2; // 16-bit PCM
+        const byteRate = sampleRate * channels * bytesPerSample;
+        const bufferSize = 44 + pcmBuffer.length;
+        const wavBuffer = Buffer.alloc(bufferSize);
+
+        // RIFF identifier
+        wavBuffer.write('RIFF', 0, 'ascii');
+        // file length
+        wavBuffer.writeUInt32LE(bufferSize - 8, 4);
+        // RIFF type
+        wavBuffer.write('WAVE', 8, 'ascii');
+        // format chunk identifier
+        wavBuffer.write('fmt ', 12, 'ascii');
+        // format chunk length
+        wavBuffer.writeUInt32LE(16, 16);
+        // sample format (raw)
+        wavBuffer.writeUInt16LE(1, 20);
+        // channel count
+        wavBuffer.writeUInt16LE(channels, 22);
+        // sample rate
+        wavBuffer.writeUInt32LE(sampleRate, 24);
+        // byte rate
+        wavBuffer.writeUInt32LE(byteRate, 28);
+        // block align
+        wavBuffer.writeUInt16LE(channels * bytesPerSample, 32);
+        // bits per sample
+        wavBuffer.writeUInt16LE(bytesPerSample * 8, 34);
+        // data chunk identifier
+        wavBuffer.write('data', 36, 'ascii');
+        // data length
+        wavBuffer.writeUInt32LE(pcmBuffer.length, 40);
+
+        // copy PCM data
+        pcmBuffer.copy(wavBuffer, 44);
+
+        return wavBuffer;
     }
 
     // 中止所有请求
