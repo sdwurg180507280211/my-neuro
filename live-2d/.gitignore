@@ -1,0 +1,69 @@
+# 敏感配置文件 (包含 API 密钥)
+config.json
+config.json.bak
+*.key
+*.pem
+*.p12
+*.pfx
+.env
+.env.local
+
+# AI 对话记录
+AI记录室/
+
+# 音频缓存
+fake_neuro_audio/
+song-library/*.wav
+song-library/*.mp3
+
+# 模型目录 (大文件)
+2D/
+Voice_Model_Factory/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
+server-tools/*.log
+
+# 临时文件
+*.tmp
+temp_*
+server-tools/temp_*
