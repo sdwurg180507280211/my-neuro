@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插件与角色商店 - My Neuro</title>
+    <link rel="stylesheet" href="market.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">🏪 插件与角色商店</h1>
+                <div class="header-actions">
+                    <button class="tab-btn active" data-tab="plugins">
+                        <span class="icon">🧩</span> 插件
+                    </button>
+                    <button class="tab-btn" data-tab="characters">
+                        <span class="icon">🎭</span> 角色
+                    </button>
+                    <button class="close-btn" id="closeBtn">✕</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 搜索与筛选 -->
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索插件或角色...">
+                <button class="search-btn">🔍</button>
+            </div>
+            <div class="category-filters" id="categoryFilters">
+                <!-- 动态生成分类按钮 -->
+            </div>
+        </div>
+
+        <!-- 精选区域 -->
+        <section class="featured-section" id="featuredSection">
+            <h2>✨ 精选推荐</h2>
+            <div class="featured-grid" id="featuredGrid">
+                <!-- 动态生成精选内容 -->
+            </div>
+        </section>
+
+        <!-- 内容列表 -->
+        <main class="content-section">
+            <div class="section-header">
+                <h2 id="sectionTitle">全部插件</h2>
+                <div class="sort-controls">
+                    <select id="sortSelect">
+                        <option value="downloads">下载最多</option>
+                        <option value="rating">评分最高</option>
+                        <option value="updated">最近更新</option>
+                        <option value="name">名称排序</option>
+                    </select>
+                </div>
+            </div>
+            <div class="items-grid" id="itemsGrid">
+                <!-- 动态生成项目卡片 -->
+            </div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">🔍</div>
+                <p>没有找到匹配的内容</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="detailModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">详情</h2>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="market.js"></script>
+</body>
+</html>
