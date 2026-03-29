@@ -19,7 +19,7 @@ class ModelSetup {
         app.stage.pivot.set(window.innerWidth / 2, window.innerHeight / 2);
 
         // 加载Live2D模型
-        const model = await PIXI.live2d.Live2DModel.from("2D/肥牛/feiniu.model3.json");
+        const model = await PIXI.live2d.Live2DModel.from("2D/feiniu/hiyori_pro_t11.model3.json");
         app.stage.addChild(model);
 
         // 根据配置控制模型显示/隐藏

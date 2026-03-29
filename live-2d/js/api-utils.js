@@ -2,24 +2,56 @@
 const fs = require('fs');
 const path = require('path');
 
+// 日志配置（会从全局config更新）
+let logConfig = {
+    show_console: true,
+    show_debug: false,
+    show_info: true,
+    show_warn: true,
+    show_error: true,
+    write_to_file: false,
+    log_file_path: 'runtime.log'
+};
+
+// 更新日志配置
+function setLogConfig(config) {
+    if (config && config.logging) {
+        logConfig = { ...logConfig, ...config.logging };
+    }
+}
+
 // 终端日志记录函数 - 普通日志
 function logToTerminal(level, message) {
     const formattedMsg = `[${level.toUpperCase()}] ${message}`;
 
-    // 输出到Electron DevTools控制台（调试用）
-    if (level === 'error') {
-        console.error(message);
-    } else if (level === 'warn') {
-        console.warn(message);
-    } else {
-        console.log(message);
+    // 根据配置决定是否输出到控制台
+    if (logConfig.show_console) {
+        const shouldShow = (
+            (level === 'debug' && logConfig.show_debug) ||
+            (level === 'info' && logConfig.show_info) ||
+            (level === 'warn' && logConfig.show_warn) ||
+            (level === 'error' && logConfig.show_error)
+        );
+
+        if (shouldShow) {
+            if (level === 'error') {
+                console.error(message);
+            } else if (level === 'warn') {
+                console.warn(message);
+            } else {
+                console.log(message);
+            }
+        }
     }
 
-    // 写入文件供UI读取（Electron应用的日志无法通过stdout传递给父进程）
-    try {
-        fs.appendFileSync(path.join(__dirname, '..', 'runtime.log'), formattedMsg + '\n', 'utf8');
-    } catch (e) {
-        // 忽略文件写入错误
+    // 根据配置决定是否写入文件
+    if (logConfig.write_to_file) {
+        try {
+            const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
+            fs.appendFileSync(logPath, formattedMsg + '\n', 'utf8');
+        } catch (e) {
+            // 忽略文件写入错误
+        }
     }
 }
 
@@ -28,20 +60,34 @@ function logToolAction(level, message) {
     // 添加 [TOOL] 标记，方便UI区分
     const formattedMsg = `[${level.toUpperCase()}][TOOL] ${message}`;
 
-    // 输出到Electron DevTools控制台（调试用）
-    if (level === 'error') {
-        console.error(`[TOOL] ${message}`);
-    } else if (level === 'warn') {
-        console.warn(`[TOOL] ${message}`);
-    } else {
-        console.log(`[TOOL] ${message}`);
+    // 根据配置决定是否输出到控制台
+    if (logConfig.show_console) {
+        const shouldShow = (
+            (level === 'debug' && logConfig.show_debug) ||
+            (level === 'info' && logConfig.show_info) ||
+            (level === 'warn' && logConfig.show_warn) ||
+            (level === 'error' && logConfig.show_error)
+        );
+
+        if (shouldShow) {
+            if (level === 'error') {
+                console.error(`[TOOL] ${message}`);
+            } else if (level === 'warn') {
+                console.warn(`[TOOL] ${message}`);
+            } else {
+                console.log(`[TOOL] ${message}`);
+            }
+        }
     }
 
-    // 写入到 runtime.log（和普通日志一起，通过[TOOL]标记区分）
-    try {
-        fs.appendFileSync(path.join(__dirname, '..', 'runtime.log'), formattedMsg + '\n', 'utf8');
-    } catch (e) {
-        // 忽略文件写入错误
+    // 根据配置决定是否写入文件
+    if (logConfig.write_to_file) {
+        try {
+            const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
+            fs.appendFileSync(logPath, formattedMsg + '\n', 'utf8');
+        } catch (e) {
+            // 忽略文件写入错误
+        }
     }
 }
 
@@ -124,5 +170,6 @@ module.exports = {
     logToTerminal,
     logToolAction,
     handleAPIError,
-    getMergedToolsList
+    getMergedToolsList,
+    setLogConfig
 };

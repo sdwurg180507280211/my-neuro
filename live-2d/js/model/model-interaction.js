@@ -28,7 +28,7 @@ class ModelInteractionController {
     // 更新交互区域大小和位置
     updateInteractionArea() {
         if (!this.model) return;
-        
+
         this.interactionWidth = this.model.width / 3;
         this.interactionHeight = this.model.height * 0.7;
         this.interactionX = this.model.x + (this.model.width - this.interactionWidth) / 2;
@@ -38,13 +38,13 @@ class ModelInteractionController {
     // 设置交互性
     setupInteractivity() {
         if (!this.model) return;
-        
+
         this.model.interactive = true;
 
         // 覆盖原始的containsPoint方法，自定义交互区域
         const originalContainsPoint = this.model.containsPoint;
         this.model.containsPoint = (point) => {
-            
+
             const isOverModel = (
                 currentModel && // 确保模型已加载
                 point.x >= this.interactionX &&
@@ -53,24 +53,78 @@ class ModelInteractionController {
                 point.y <= this.interactionY + this.interactionHeight
             );
 
-            // // 检查是否在聊天框内
+            // 检查是否在聊天框内
             const chatContainer = document.getElementById('text-chat-container');
             if (!chatContainer) return isOverModel; // 如果聊天框不存在，仅检查模型
 
             // 获取PIXI应用的view(DOM canvas元素)
             const pixiView = this.app.renderer.view;
-    
+
             // 计算canvas在页面中的位置
             const canvasRect = pixiView.getBoundingClientRect();
-    
+
             // 获取聊天框的DOM位置
             const chatRect = chatContainer.getBoundingClientRect();
-    
+
             // 将DOM坐标转换为PIXI坐标
             const chatLeftInPixi = (chatRect.left - canvasRect.left) * (pixiView.width / canvasRect.width);
             const chatRightInPixi = (chatRect.right - canvasRect.left) * (pixiView.width / canvasRect.width);
             const chatTopInPixi = (chatRect.top - canvasRect.top) * (pixiView.height / canvasRect.height);
             const chatBottomInPixi = (chatRect.bottom - canvasRect.top) * (pixiView.height / canvasRect.height);
+
+            // 检查是否在商店按钮内
+            const marketBtnContainer = document.getElementById('market-btn-container');
+            let isOverMarketBtn = false;
+            if (marketBtnContainer) {
+                const marketRect = marketBtnContainer.getBoundingClientRect();
+                const marketLeftInPixi = (marketRect.left - canvasRect.left) * (pixiView.width / canvasRect.width);
+                const marketRightInPixi = (marketRect.right - canvasRect.left) * (pixiView.width / canvasRect.width);
+                const marketTopInPixi = (marketRect.top - canvasRect.top) * (pixiView.height / canvasRect.height);
+                const marketBottomInPixi = (marketRect.bottom - canvasRect.top) * (pixiView.height / canvasRect.height);
+
+                isOverMarketBtn = (
+                    point.x >= marketLeftInPixi &&
+                    point.x <= marketRightInPixi &&
+                    point.y >= marketTopInPixi &&
+                    point.y <= marketBottomInPixi
+                );
+            }
+
+            // 检查是否在角色切换按钮内
+            const charSwitchContainer = document.getElementById('character-switcher-container');
+            let isOverCharSwitchBtn = false;
+            if (charSwitchContainer) {
+                const charRect = charSwitchContainer.getBoundingClientRect();
+                const charLeftInPixi = (charRect.left - canvasRect.left) * (pixiView.width / canvasRect.width);
+                const charRightInPixi = (charRect.right - canvasRect.left) * (pixiView.width / canvasRect.width);
+                const charTopInPixi = (charRect.top - canvasRect.top) * (pixiView.height / canvasRect.height);
+                const charBottomInPixi = (charRect.bottom - canvasRect.top) * (pixiView.height / canvasRect.height);
+
+                isOverCharSwitchBtn = (
+                    point.x >= charLeftInPixi &&
+                    point.x <= charRightInPixi &&
+                    point.y >= charTopInPixi &&
+                    point.y <= charBottomInPixi
+                );
+            }
+
+            // 检查是否在角色选择面板内
+            const charPanel = document.getElementById('character-panel');
+            let isOverCharPanel = false;
+            if (charPanel && charPanel.style.display !== 'none') {
+                const panelRect = charPanel.getBoundingClientRect();
+                const panelLeftInPixi = (panelRect.left - canvasRect.left) * (pixiView.width / canvasRect.width);
+                const panelRightInPixi = (panelRect.right - canvasRect.left) * (pixiView.width / canvasRect.width);
+                const panelTopInPixi = (panelRect.top - canvasRect.top) * (pixiView.height / canvasRect.height);
+                const panelBottomInPixi = (panelRect.bottom - canvasRect.top) * (pixiView.height / canvasRect.height);
+
+                isOverCharPanel = (
+                    point.x >= panelLeftInPixi &&
+                    point.x <= panelRightInPixi &&
+                    point.y >= panelTopInPixi &&
+                    point.y <= panelBottomInPixi
+                );
+            }
 
             // const chatRect = chatContainer.getBoundingClientRect();
             const isOverChat = (
@@ -80,10 +134,10 @@ class ModelInteractionController {
                 point.y <= chatBottomInPixi
             );
 
-            
-            return isOverModel || isOverChat;
+
+            return isOverModel || isOverChat || isOverMarketBtn || isOverCharSwitchBtn || isOverCharPanel;
         };
-        
+
 
         // 鼠标按下事件
         this.model.on('mousedown', (e) => {
@@ -96,7 +150,7 @@ class ModelInteractionController {
                     ignore: false
                 });
             }
-            
+
         });
 
         // 鼠标移动事件
@@ -139,7 +193,7 @@ class ModelInteractionController {
                 ipcRenderer.send('set-ignore-mouse-events', {
                     ignore: false
                 });
-                
+
             }
         });
 
@@ -213,6 +267,71 @@ class ModelInteractionController {
                 this.model.expression();
             }
         });
+
+        // 商店按钮的鼠标事件监听
+        const marketBtnContainer = document.getElementById('market-btn-container');
+        if (marketBtnContainer) {
+            // 鼠标进入商店按钮区域时，取消忽略鼠标事件
+            marketBtnContainer.addEventListener('mouseenter', () => {
+                ipcRenderer.send('set-ignore-mouse-events', {
+                    ignore: false
+                });
+            });
+
+            // 鼠标离开商店按钮区域时，恢复忽略（如果不在其他交互区域）
+            marketBtnContainer.addEventListener('mouseleave', () => {
+                setTimeout(() => {
+                    if (!this.model.containsPoint(this.app.renderer.plugins.interaction.mouse.global)) {
+                        ipcRenderer.send('set-ignore-mouse-events', {
+                            ignore: true,
+                            options: { forward: true }
+                        });
+                    }
+                }, 100);
+            });
+        }
+
+        // 角色切换按钮的鼠标事件监听
+        const charSwitchContainer = document.getElementById('character-switcher-container');
+        if (charSwitchContainer) {
+            charSwitchContainer.addEventListener('mouseenter', () => {
+                ipcRenderer.send('set-ignore-mouse-events', {
+                    ignore: false
+                });
+            });
+
+            charSwitchContainer.addEventListener('mouseleave', () => {
+                setTimeout(() => {
+                    if (!this.model.containsPoint(this.app.renderer.plugins.interaction.mouse.global)) {
+                        ipcRenderer.send('set-ignore-mouse-events', {
+                            ignore: true,
+                            options: { forward: true }
+                        });
+                    }
+                }, 100);
+            });
+        }
+
+        // 角色选择面板的鼠标事件监听
+        const charPanel = document.getElementById('character-panel');
+        if (charPanel) {
+            charPanel.addEventListener('mouseenter', () => {
+                ipcRenderer.send('set-ignore-mouse-events', {
+                    ignore: false
+                });
+            });
+
+            charPanel.addEventListener('mouseleave', () => {
+                setTimeout(() => {
+                    if (!this.model.containsPoint(this.app.renderer.plugins.interaction.mouse.global)) {
+                        ipcRenderer.send('set-ignore-mouse-events', {
+                            ignore: true,
+                            options: { forward: true }
+                        });
+                    }
+                }, 100);
+            });
+        }
 
         // 鼠标滚轮事件（缩放功能）
         window.addEventListener('wheel', (e) => {

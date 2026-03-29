@@ -6,14 +6,6 @@
     <link rel="stylesheet" href="css/styles.css">
     <title>Live2D桌宠与语音聊天</title>
 </head>
-<!DOCTYPE html>
-<html>
-
-<head>
-    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
-    <title>Live2D桌宠与语音聊天</title>
-</head>
 
 <body>
     <canvas id="canvas"></canvas>
@@ -41,6 +33,27 @@
 
     <!-- 工具调用气泡框堆叠容器 -->
     <div id="tool-bubbles-container"></div>
+
+    <!-- 商店按钮 -->
+    <div id="market-btn-container">
+        <button id="market-btn" title="打开插件与角色商店">🏪</button>
+    </div>
+
+    <!-- 角色切换按钮 -->
+    <div id="character-switcher-container">
+        <button id="character-switch-btn" title="切换角色">👤</button>
+    </div>
+
+    <!-- 角色选择面板 -->
+    <div id="character-panel" class="character-panel" style="display: none;">
+        <div class="character-panel-header">
+            <h3>选择角色</h3>
+            <button class="panel-close" id="close-character-panel">✕</button>
+        </div>
+        <div class="character-list" id="character-list">
+            <!-- 角色列表将由 JS 动态生成 -->
+        </div>
+    </div>
 
     <!-- 引入 Live2D 依赖 -->
     <script src="libs/live2d.min.js"></script>

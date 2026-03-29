@@ -10,7 +10,10 @@ const screenshot = require('screenshot-desktop');
 const configPath = path.join(app.getAppPath(), 'config.json');
 
 // Live2D模型优先级配置（Python程序会修改这个列表来切换模型）
-const priorityFolders = ['肥牛', 'Hiyouri', 'Default', 'Main'];
+const priorityFolders = ['feiniu', '肥牛', 'jingliu', 'fuxuan', 'kafka', 'robin', 'huohuo', 'jian', 'yangyang', 'nicole', 'rice', 'Hiyouri', 'Default', 'Main'];
+
+// 市场窗口引用
+let marketWindow = null;
 
 
 function ensureTopMost(win) {
@@ -74,6 +77,42 @@ function createWindow () {
     
     
     return win
+}
+
+/**
+ * 创建插件/角色市场窗口
+ */
+function createMarketWindow() {
+    if (marketWindow) {
+        marketWindow.focus();
+        return;
+    }
+
+    marketWindow = new BrowserWindow({
+        width: 1000,
+        height: 700,
+        minWidth: 800,
+        minHeight: 600,
+        frame: true,
+        title: '插件与角色商店',
+        backgroundColor: '#f8f9fa',
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+            enableRemoteModule: true
+        },
+        show: false
+    });
+
+    marketWindow.loadFile(path.join(__dirname, 'market', 'market.html'));
+
+    marketWindow.once('ready-to-show', () => {
+        marketWindow.show();
+    });
+
+    marketWindow.on('closed', () => {
+        marketWindow = null;
+    });
 }
 
 // 在主进程启动时调用
@@ -280,6 +319,18 @@ ipcMain.handle('switch-live2d-model', async (event, modelName) => {
         return { success: false, message: `切换失败: ${error.message}` }
     }
 })
+
+// 打开市场窗口的IPC处理器
+ipcMain.on('open-market', () => {
+    createMarketWindow();
+});
+
+// 关闭市场窗口的IPC处理器
+ipcMain.on('close-market', () => {
+    if (marketWindow) {
+        marketWindow.close();
+    }
+});
 
 // 添加保存模型位置的IPC处理器
 ipcMain.on('save-model-position', (event, position) => {
