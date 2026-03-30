@@ -50,7 +50,8 @@ function logToTerminal(level, message) {
             const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
             fs.appendFileSync(logPath, formattedMsg + '\n', 'utf8');
         } catch (e) {
-            // 忽略文件写入错误
+            console.error('写入日志文件失败:', e.message);
+            console.error('日志路径:', logPath);
         }
     }
 }
@@ -86,7 +87,8 @@ function logToolAction(level, message) {
             const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
             fs.appendFileSync(logPath, formattedMsg + '\n', 'utf8');
         } catch (e) {
-            // 忽略文件写入错误
+            console.error('写入日志文件失败:', e.message);
+            console.error('日志路径:', logPath);
         }
     }
 }
@@ -165,6 +167,73 @@ function getMergedToolsList() {
 
     return allTools;
 }
+
+// 全局console拦截，让所有控制台输出也写入日志文件
+function hookConsoleLogging() {
+    // 保存原始方法
+    const originalLog = console.log;
+    const originalInfo = console.info;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    const originalDebug = console.debug;
+
+    // 将多个参数转换为字符串
+    function formatArgs(args) {
+        return args.map(arg => {
+            if (typeof arg === 'object') {
+                try {
+                    return JSON.stringify(arg, null, 2);
+                } catch {
+                    return String(arg);
+                }
+            }
+            return String(arg);
+        }).join(' ');
+    }
+
+    // 写入文件的通用函数
+    function writeToFile(level, args) {
+        if (!logConfig.write_to_file) return;
+
+        try {
+            const message = formatArgs(args);
+            const formattedMsg = `[${level.toUpperCase()}] ${message}`;
+            const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
+            fs.appendFileSync(logPath, formattedMsg + '\n', 'utf8');
+        } catch (e) {
+            // 这里不能再用console.error，否则会死递归，只能静默
+        }
+    }
+
+    // 替换console方法
+    console.log = function(...args) {
+        writeToFile('log', args);
+        originalLog.apply(console, args);
+    };
+
+    console.info = function(...args) {
+        writeToFile('info', args);
+        originalInfo.apply(console, args);
+    };
+
+    console.warn = function(...args) {
+        writeToFile('warn', args);
+        originalWarn.apply(console, args);
+    };
+
+    console.error = function(...args) {
+        writeToFile('error', args);
+        originalError.apply(console, args);
+    };
+
+    console.debug = function(...args) {
+        writeToFile('debug', args);
+        originalDebug.apply(console, args);
+    };
+}
+
+// 立即执行console钩子
+hookConsoleLogging();
 
 module.exports = {
     logToTerminal,

@@ -94,7 +94,7 @@
   },
   "ui": {
     "intro_text": "你好啊",
-    "model_scale": 0.15598927151048014,
+    "model_scale": 0.18776936229456856,
     "show_chat_box": true,
     "show_market_button": true,
     "show_character_switch_button": true,
@@ -104,8 +104,8 @@
     "auto_show_chat_on_text_mode": true,
     "hide_from_screenshot": true,
     "model_position": {
-      "x": 1.5048248193823692,
-      "y": 1.1811317884814592,
+      "x": 1.5273484510565611,
+      "y": 1.121441539207296,
       "remember_position": true
     }
   },
@@ -115,7 +115,7 @@
     "show_info": true,
     "show_warn": true,
     "show_error": true,
-    "write_to_file": false,
+    "write_to_file": true,
     "log_file_path": "runtime.log"
   },
   "context": {

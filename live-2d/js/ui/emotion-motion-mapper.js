@@ -365,12 +365,16 @@ class EmotionMotionMapper {
     findMotionIndexByFileName(fileName) {
         try {
             const motionDefinitions = this.model.internalModel.settings.motions[this.currentMotionGroup];
-            if (!motionDefinitions) {
+            if (!motionDefinitions || !Array.isArray(motionDefinitions)) {
                 console.error(`未找到动作组 "${this.currentMotionGroup}"`);
                 return -1;
             }
 
-            return motionDefinitions.findIndex(motion => motion.File === fileName);
+            const index = motionDefinitions.findIndex(motion => motion && motion.File === fileName);
+            if (index === -1) {
+                console.warn(`未在动作组中找到动作文件: ${fileName}`);
+            }
+            return index;
         } catch (error) {
             console.error('查找动作索引失败:', error);
             return -1;
@@ -386,8 +390,19 @@ class EmotionMotionMapper {
 
         try {
             const motionDefinitions = this.model.internalModel.settings.motions[this.currentMotionGroup];
-            if (!motionDefinitions || motionDefinitions.length === 0) {
+            if (!motionDefinitions || !Array.isArray(motionDefinitions) || motionDefinitions.length === 0) {
                 console.error(`动作组 "${this.currentMotionGroup}" 为空或不存在`);
+                return;
+            }
+
+            if (index < 0 || index >= motionDefinitions.length) {
+                console.error(`动作索引 ${index} 超出范围 (0-${motionDefinitions.length - 1})`);
+                return;
+            }
+
+            const motionDef = motionDefinitions[index];
+            if (!motionDef || !motionDef.File) {
+                console.error(`动作索引 ${index} 的定义无效`);
                 return;
             }
 

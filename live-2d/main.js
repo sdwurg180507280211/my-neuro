@@ -18,7 +18,7 @@ let marketWindow = null;
 
 function ensureTopMost(win) {
     if (!win.isAlwaysOnTop()) {
-        win.setAlwaysOnTop(true, 'screen-saver')
+        win.setAlwaysOnTop(true)
     }
 }
 
@@ -47,7 +47,7 @@ function createWindow () {
         skipTaskbar: true,
         maximizable: false,
     })
-    win.setAlwaysOnTop(true, 'screen-saver')
+    win.setAlwaysOnTop(true)
     win.setIgnoreMouseEvents(true, { forward: true });
     win.setMenu(null)
     win.setPosition(0, 0)
@@ -165,7 +165,7 @@ ipcMain.on('set-ignore-mouse-events', (event, { ignore, options }) => {
 
 ipcMain.on('request-top-most', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
-    win.setAlwaysOnTop(true, 'screen-saver')
+    win.setAlwaysOnTop(true)
 })
 
 // 添加保存配置的IPC处理器

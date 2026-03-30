@@ -74,7 +74,75 @@ function buildPythonCommand(scriptPath, args = '') {
     return `${prefix}${command} ${escapedPath}${args ? ' ' + args : ''}`;
 }
 
+/**
+ * 获取工具定义
+ * @returns {Array<Object>} 工具定义数组
+ */
+function getToolDefinitions() {
+    return [
+        {
+            name: 'get_python_command',
+            description: '获取系统可用的 Python 命令，返回包含命令和环境激活前缀的信息',
+            parameters: {
+                type: 'object',
+                properties: {}
+            }
+        },
+        {
+            name: 'build_python_command',
+            description: '构建完整的 Python 执行命令，自动检测 Python 环境',
+            parameters: {
+                type: 'object',
+                properties: {
+                    scriptPath: {
+                        type: 'string',
+                        description: 'Python 脚本文件路径'
+                    },
+                    args: {
+                        type: 'string',
+                        description: '额外的命令行参数（可选）'
+                    }
+                },
+                required: ['scriptPath']
+            }
+        }
+    ];
+}
+
+/**
+ * 执行工具调用
+ * @param {string} toolName - 工具名称
+ * @param {Object} parameters - 参数
+ * @returns {Promise<any>} 执行结果
+ */
+async function executeFunction(toolName, parameters) {
+    switch (toolName) {
+        case 'get_python_command': {
+            const result = getPythonCommand();
+            return {
+                success: true,
+                ...result
+            };
+        }
+        case 'build_python_command': {
+            const { scriptPath, args = '' } = parameters;
+            if (!scriptPath) {
+                throw new Error('缺少必需参数: scriptPath');
+            }
+            const command = buildPythonCommand(scriptPath, args);
+            return {
+                success: true,
+                command: command
+            };
+        }
+        default:
+            throw new Error(`未知工具: ${toolName}`);
+    }
+}
+
 module.exports = {
     getPythonCommand,
-    buildPythonCommand
+    buildPythonCommand,
+    getToolDefinitions,
+    executeFunction
 };
