@@ -92,5 +92,185 @@
       "害羞": [],
       "俏皮": []
     }
+  },
+  "jian": {
+    "emotion_expressions": {
+      "开心": [
+        "2D/jian/星星眼.exp3.json"
+      ],
+      "生气": [
+        "2D/jian/生气.exp3.json"
+      ],
+      "难过": [
+        "2D/jian/泪.exp3.json"
+      ],
+      "惊讶": [
+        "2D/jian/白眼.exp3.json"
+      ],
+      "害羞": [
+        "2D/jian/脸红.exp3.json"
+      ],
+      "俏皮": [
+        "2D/jian/脸黑.exp3.json"
+      ],
+      "表情1": [
+        "2D/jian/右手.exp3.json"
+      ],
+      "表情2": [
+        "2D/jian/左手.exp3.json"
+      ],
+      "表情3": [
+        "2D/jian/星星眼.exp3.json"
+      ],
+      "表情4": [
+        "2D/jian/泪.exp3.json"
+      ],
+      "表情5": [
+        "2D/jian/爱心眼.exp3.json"
+      ],
+      "表情6": [
+        "2D/jian/生气.exp3.json"
+      ],
+      "表情7": [
+        "2D/jian/白眼.exp3.json"
+      ]
+    }
+  },
+  "robin": {
+    "emotion_expressions": {
+      "开心": [
+        "2D/robin/拿酒杯.exp3.json"
+      ],
+      "生气": [],
+      "难过": [],
+      "惊讶": [
+        "2D/robin/捂胸.exp3.json"
+      ],
+      "害羞": [],
+      "俏皮": [
+        "2D/robin/麦克风.exp3.json"
+      ]
+    }
+  },
+  "huohuo": {
+    "emotion_expressions": {
+      "开心": [
+        "2D/huohuo/白眼.exp3.json"
+      ],
+      "生气": [
+        "2D/huohuo/黑脸.exp3.json"
+      ],
+      "难过": [
+        "2D/huohuo/眼泪.exp3.json"
+      ],
+      "惊讶": [
+        "2D/huohuo/拿旗子.exp3.json"
+      ],
+      "害羞": [
+        "2D/huohuo/抱枕.exp3.json"
+      ],
+      "俏皮": []
+    }
+  },
+  "yangyang": {
+    "emotion_expressions": {
+      "开心": [
+        "2D/yangyang/反绑x.exp3.json"
+      ],
+      "生气": [
+        "2D/yangyang/脸黑.exp3.json"
+      ],
+      "难过": [
+        "2D/yangyang/眼泪.exp3.json"
+      ],
+      "惊讶": [
+        "2D/yangyang/悲.exp3.json"
+      ],
+      "害羞": [],
+      "俏皮": []
+    }
+  },
+  "rice": {
+    "emotion_expressions": {
+      "开心": [],
+      "生气": [],
+      "难过": [],
+      "惊讶": [],
+      "害羞": [],
+      "俏皮": []
+    }
+  },
+  "nicole": {
+    "emotion_expressions": {
+      "开心": [
+        "2D/nicole/Love eye.exp3.json"
+      ],
+      "生气": [
+        "2D/nicole/black face.exp3.json"
+      ],
+      "难过": [
+        "2D/nicole/cry.exp3.json"
+      ],
+      "惊讶": [],
+      "害羞": [
+        "2D/nicole/shyness.exp3.json"
+      ],
+      "俏皮": [
+        "2D/nicole/Milk Tea.exp3.json"
+      ],
+      "表情1": [
+        "2D/nicole/Love Hand Posture.exp3.json"
+      ],
+      "表情2": [
+        "2D/nicole/Money Hand Posture.exp3.json"
+      ],
+      "表情3": [
+        "2D/nicole/Phone Hand Posture.exp3.json"
+      ],
+      "表情4": [
+        "2D/nicole/Y Hand Posture.exp3.json"
+      ],
+      "表情5": [
+        "2D/nicole/Love eye.exp3.json"
+      ],
+      "表情6": [
+        "2D/nicole/Money eye.exp3.json"
+      ],
+      "表情7": [
+        "2D/nicole/sitting position.exp3.json"
+      ]
+    }
+  },
+  "jingliu": {
+    "emotion_expressions": {
+      "开心": [],
+      "生气": [],
+      "难过": [],
+      "惊讶": [
+        "2D/jingliu/眼罩.exp3.json"
+      ],
+      "害羞": [],
+      "俏皮": []
+    }
+  },
+  "fuxuan": {
+    "emotion_expressions": {
+      "开心": [],
+      "生气": [],
+      "难过": [],
+      "惊讶": [],
+      "害羞": [],
+      "俏皮": []
+    }
+  },
+  "kafka": {
+    "emotion_expressions": {
+      "开心": [],
+      "生气": [],
+      "难过": [],
+      "惊讶": [],
+      "害羞": [],
+      "俏皮": []
+    }
   }
 }
