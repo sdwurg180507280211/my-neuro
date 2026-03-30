@@ -83,14 +83,11 @@ body {
     padding: 10px;
     font-size: 14px;
     color: #333333;
-    min-height: 20px;
-    overflow-y: auto;
-}
-
-#chat-input:empty:before {
-    content: attr(placeholder);
-    color: #999999;
-    pointer-events: none;
+    height: 20px;
+    overflow: hidden;
+    resize: none;
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 #chat-send-btn {

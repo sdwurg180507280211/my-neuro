@@ -16,6 +16,18 @@ class UIController {
         this.bubbleTargetY = 0;
     }
 
+    /**
+     * 设置鼠标穿透状态
+     * @param {boolean} ignore 是否忽略鼠标事件（穿透）
+     * @param {boolean} forward 是否转发事件
+     */
+    setMouseIgnore(ignore, forward) {
+        ipcRenderer.send('set-ignore-mouse-events', {
+            ignore,
+            options: { forward }
+        });
+    }
+
     // 初始化UI控制
     initialize() {
         this.setupMouseIgnore();
@@ -30,10 +42,7 @@ class UIController {
             const shouldIgnore = !global.currentModel.containsPoint(
                 global.pixiApp.renderer.plugins.interaction.mouse.global
             );
-            ipcRenderer.send('set-ignore-mouse-events', {
-                ignore: shouldIgnore,
-                options: { forward: true }
-            });
+            this.setMouseIgnore(shouldIgnore, true);
         };
 
         document.addEventListener('mousemove', updateMouseIgnore);
@@ -48,31 +57,19 @@ class UIController {
         if (!chatInput || !textChatContainer || !submitBtn) return;
 
         textChatContainer.addEventListener('mouseenter', () => {
-            ipcRenderer.send('set-ignore-mouse-events', {
-                ignore: false,
-                options: { forward: false }
-            });
+            this.setMouseIgnore(false, false);
         });
 
         textChatContainer.addEventListener('mouseleave', () => {
-            ipcRenderer.send('set-ignore-mouse-events', {
-                ignore: true,
-                options: { forward: true }
-            });
+            this.setMouseIgnore(true, true);
         });
 
         chatInput.addEventListener('focus', () => {
-            ipcRenderer.send('set-ignore-mouse-events', {
-                ignore: false,
-                options: { forward: false }
-            });
+            this.setMouseIgnore(false, false);
         });
 
         chatInput.addEventListener('blur', () => {
-            ipcRenderer.send('set-ignore-mouse-events', {
-                ignore: true,
-                options: { forward: true }
-            });
+            this.setMouseIgnore(true, true);
         });
         
     }
@@ -378,9 +375,18 @@ class UIController {
         textChatContainer.style.display = shouldShowChatBox ? 'block' : 'none';
 
         // 如果启用了text_only_mode或者TTS/ASR任一被禁用，自动显示聊天框
-        if ((this.config.ui && this.config.ui.text_only_mode) || !ttsEnabled || !asrEnabled) {
+        const isTextMode = (this.config.ui && this.config.ui.text_only_mode);
+        const shouldShow = (isTextMode || !ttsEnabled || !asrEnabled);
+        const isChatVisible = shouldShow || shouldShowChatBox;
+        if (shouldShow) {
             textChatContainer.style.display = 'block';
             console.log('检测到纯文本模式或TTS/ASR禁用，自动显示聊天框');
+        }
+
+        // 如果聊天框可见，初始化设置为不穿透鼠标，确保可以点击输入
+        // 修复：初始状态下鼠标穿透导致无法点击输入框的问题
+        if (isChatVisible) {
+            this.setMouseIgnore(false, false);
         }
 
         // 从localStorage加载保存的样式
@@ -431,10 +437,10 @@ class UIController {
         if (!chatInput || !chatSendBtn) return;
 
         const handleSendMessage = () => {
-            const message = chatInput.textContent.trim();
+            const message = chatInput.value.trim();
             if (!message) return;
 
-            chatInput.textContent = '';
+            chatInput.value = '';
 
             // 走 inputRouter.handleTextInput，触发插件 hooks（含 memos 记忆注入）
             if (voiceChat.inputRouter) {

@@ -34,7 +34,7 @@ function createWindow () {
         backgroundColor: '#00000000',
         hasShadow: false,
         focusable: true,
-        type: 'desktop',
+        // type: 'desktop', // macOS下会导致系统禁止键盘输入，移除后才能正常输入消息
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
