@@ -128,24 +128,18 @@ class EmotionMotionMapper {
         }
     }
 
-    // 保存配置到文件（需要后端API支持）
+    // 保存配置到文件（通过Electron IPC调用主进程写入）
     async saveConfigToFile() {
+        const { ipcRenderer } = require('electron');
         try {
-            // 这里需要一个后端API来保存文件
-            // 可以通过main.js中的IPC或HTTP接口实现
-            const response = await fetch('/api/save-emotion-config', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(this.allCharacterConfigs)
-            });
+            // 通过IPC调用主进程保存到本地文件
+            const result = await ipcRenderer.invoke('save-emotion-config', this.allCharacterConfigs);
 
-            if (!response.ok) {
-                throw new Error('保存配置失败');
+            if (result.success) {
+                console.log('情绪配置已成功保存到文件');
+            } else {
+                throw new Error(result.error || '保存配置失败');
             }
-
-            console.log('情绪配置已成功保存');
         } catch (error) {
             console.error('保存配置到文件失败:', error);
 

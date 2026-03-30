@@ -8,6 +8,8 @@ class LocalToolManager {
         this.modules = [];
         this.config = config.tools || { enabled: true, auto_reload: false };
         this.isEnabled = this.config.enabled;
+        // 🔥 缓存：验证并去重后的工具列表，避免每次重复验证
+        this._cachedValidTools = null;
 
         console.log(`🔧 工具管理器配置: 启用=${this.isEnabled}, 自动重载=${this.config.auto_reload}`);
 
@@ -75,6 +77,8 @@ class LocalToolManager {
     // 重新加载所有工具模块
     reloadTools() {
         console.log('🔄 重新加载工具模块...');
+        // 清除缓存，强制重新验证
+        this._cachedValidTools = null;
         this.loadAllTools();
     }
 
@@ -82,6 +86,11 @@ class LocalToolManager {
     getToolsForLLM() {
         if (!this.isEnabled || this.tools.length === 0) {
             return [];
+        }
+
+        // 🔥 如果缓存存在且工具列表未变化，直接返回缓存
+        if (this._cachedValidTools !== null) {
+            return this._cachedValidTools;
         }
 
         const validatedTools = [];
@@ -133,7 +142,7 @@ class LocalToolManager {
                             console.warn(`⚠️ 工具 ${tool.name} 的属性 ${propName} 缺少type字段，设为string`);
                             propDef.type = "string";
                         }
-                        
+
                         // 🔥 关键修复：如果是array类型，必须有items字段
                         if (propDef.type === "array") {
                             if (!propDef.items || typeof propDef.items !== 'object') {
@@ -153,13 +162,13 @@ class LocalToolManager {
                                 }
                             }
                         }
-                        
+
                         // 确保每个属性都有description
                         if (!propDef.description) {
                             console.warn(`⚠️ 工具 ${tool.name} 的属性 ${propName} 缺少description字段，自动添加`);
                             propDef.description = `${propName}参数`;
                         }
-                        
+
                         // 移除Gemini不支持的字段
                         const unsupportedFields = ['enum', 'default', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'format'];
                         unsupportedFields.forEach(field => {
@@ -176,12 +185,12 @@ class LocalToolManager {
                                 delete propDef[field];
                             }
                         });
-                        
+
                         // 只保留Gemini支持的字段
-                        const allowedFields = propDef.type === 'array' 
+                        const allowedFields = propDef.type === 'array'
                             ? ['type', 'description', 'items']  // array类型允许items
                             : ['type', 'description'];
-                        
+
                         Object.keys(propDef).forEach(key => {
                             if (!allowedFields.includes(key)) {
                                 console.log(`🔧 工具 ${tool.name}.${propName}: 移除未知字段 ${key}`);
@@ -209,11 +218,11 @@ class LocalToolManager {
         }
 
         console.log(`🔧 工具验证完成: ${validatedTools.length}/${this.tools.length} 个工具有效`);
-        
+
         // 🔥 去重：移除重复的工具名称（Gemini不允许重复）
         const uniqueTools = [];
         const seenNames = new Set();
-        
+
         for (const tool of validatedTools) {
             const toolName = tool.function.name;
             if (seenNames.has(toolName)) {
@@ -223,12 +232,14 @@ class LocalToolManager {
                 uniqueTools.push(tool);
             }
         }
-        
+
         if (uniqueTools.length < validatedTools.length) {
             console.log(`🔧 去重完成: ${uniqueTools.length}/${validatedTools.length} 个工具（移除了 ${validatedTools.length - uniqueTools.length} 个重复）`);
         }
-        
-        return uniqueTools;
+
+        // 🔥 缓存结果
+        this._cachedValidTools = uniqueTools;
+        return this._cachedValidTools;
     }
 
     // 查找工具对应的模块
@@ -346,6 +357,8 @@ class LocalToolManager {
     updateConfig(newConfig) {
         this.config = { ...this.config, ...newConfig };
         this.isEnabled = this.config.enabled;
+        // 配置变化清除缓存
+        this._cachedValidTools = null;
 
         console.log(`🔧 工具管理器配置已更新:`, this.config);
 

@@ -72,5 +72,25 @@
         "expressions/expression7.exp3.json"
       ]
     }
+  },
+  "huohuo": {
+    "emotion_expressions": {
+      "开心": [],
+      "生气": [],
+      "难过": [],
+      "惊讶": [],
+      "害羞": [],
+      "俏皮": []
+    }
+  },
+  "fuxuan": {
+    "emotion_expressions": {
+      "开心": [],
+      "生气": [],
+      "难过": [],
+      "惊讶": [],
+      "害羞": [],
+      "俏皮": []
+    }
   }
 }

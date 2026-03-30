@@ -145,7 +145,12 @@ class EnhancedTextProcessor {
                     if (this._fallbackTimer) {
                         // 还在打字，不要急着结束
                     } else {
-                        console.log('检测到队列为空但任务未结束（可能是TTS失败），强制结束');
+                        // 🔥 优化：只有当TTS确实被标记为不可用时才输出警告
+                        // 如果只是纯情绪标签（清理后所有分段为空），这是正常情况，不需要警告
+                        if (this.ttsUnavailable) {
+                            console.log('检测到队列为空但任务未结束（TTS不可用），强制结束');
+                        }
+                        // 无论如何都要完成，因为确实已经处理完了
                         this.handleAllComplete();
                     }
                 }

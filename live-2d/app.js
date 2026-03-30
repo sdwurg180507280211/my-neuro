@@ -46,12 +46,9 @@ eventBus.on(Events.BARRAGE_END, () => {
 let config;
 try {
     config = configLoader.load();
+    setLogConfig(config);
     console.log('配置文件加载成功');
     console.log('MCP配置:', config.mcp);
-
-    // 应用日志配置
-    setLogConfig(config);
-    logToTerminal('info', '配置文件加载成功');
 
     // 检查TTS和ASR配置
     const ttsEnabled = config.tts?.enabled !== false;
@@ -59,12 +56,9 @@ try {
 
     console.log(`TTS模块: ${ttsEnabled ? '启用' : '禁用'}`);
     console.log(`ASR模块: ${asrEnabled ? '启用' : '禁用'}`);
-    logToTerminal('info', `TTS模块: ${ttsEnabled ? '启用' : '禁用'}`);
-    logToTerminal('info', `ASR模块: ${asrEnabled ? '启用' : '禁用'}`);
 
 } catch (error) {
     console.error('配置加载失败:', error);
-    logToTerminal('error', `配置加载失败: ${error.message}`);
     alert(`配置文件错误: ${error.message}\n请检查config.json格式是否正确。`);
     throw error;
 }
@@ -73,12 +67,11 @@ try {
 global.reloadConfig = function() {
     try {
         config = configLoader.load();
+        setLogConfig(config);
         console.log('配置文件已重新加载');
-        logToTerminal('info', '配置文件已重新加载');
         return true;
     } catch (error) {
         console.error('重新加载配置文件失败:', error);
-        logToTerminal('error', `重新加载配置文件失败: ${error.message}`);
         return false;
     }
 }

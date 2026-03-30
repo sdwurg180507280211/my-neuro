@@ -10,7 +10,7 @@ const screenshot = require('screenshot-desktop');
 const configPath = path.join(app.getAppPath(), 'config.json');
 
 // Live2D模型优先级配置（Python程序会修改这个列表来切换模型）
-const priorityFolders = ['feiniu', 'rice', 'huohuo', 'fuxuan', 'kafka', '肥牛', 'jingliu', 'robin', 'jian', 'yangyang', 'nicole', 'Hiyouri', 'Default', 'Main'];
+const priorityFolders = ['feiniu', 'fuxuan', 'huohuo', 'jian', 'robin', 'rice', 'kafka', '肥牛', 'jingliu', 'yangyang', 'nicole', 'Hiyouri', 'Default', 'Main'];
 
 // 市场窗口引用
 let marketWindow = null;
@@ -369,5 +369,31 @@ ipcMain.on('save-model-position', (event, position) => {
 
     } catch (error) {
         console.error('保存模型位置失败:', error);
+    }
+})
+
+// 添加保存情绪配置的IPC处理器
+ipcMain.handle('save-emotion-config', (event, configData) => {
+    try {
+        const filePath = path.join(__dirname, 'emotion_actions.json');
+        fs.writeFileSync(filePath, JSON.stringify(configData, null, 2), 'utf8');
+        console.log('情绪配置已保存到文件:', filePath);
+        return { success: true };
+    } catch (error) {
+        console.error('保存情绪配置失败:', error);
+        return { success: false, error: error.message };
+    }
+})
+
+// 添加保存表情配置的IPC处理器
+ipcMain.handle('save-expression-config', (event, configData) => {
+    try {
+        const filePath = path.join(__dirname, 'emotion_expressions.json');
+        fs.writeFileSync(filePath, JSON.stringify(configData, null, 2), 'utf8');
+        console.log('表情配置已保存到文件:', filePath);
+        return { success: true };
+    } catch (error) {
+        console.error('保存表情配置失败:', error);
+        return { success: false, error: error.message };
     }
 })

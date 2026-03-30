@@ -77,7 +77,7 @@ class EmotionExpressionMapper {
 
             // 创建新角色的默认配置
             this.allCharacterConfigs[characterName] = {
-                "emotion_actions": this.createDefaultEmotionConfig()
+                "emotion_expressions": this.createDefaultExpressionConfig()
             };
 
             // 尝试通过HTTP请求保存配置（需要后端支持）
@@ -254,25 +254,22 @@ class EmotionExpressionMapper {
                     "俏皮": this.expressionConfig["俏皮"]?.length || 0
                 });
             }
-            
-            // 尝试通过HTTP请求保存配置（需要后端支持）
-            const response = await fetch('/api/save-expression-config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(this.allCharacterConfigs)
-            });
-            
-            if (response.ok) {
-                console.log('表情配置已成功保存到服务器');
+
+            // 通过Electron IPC调用主进程保存到本地文件
+            const { ipcRenderer } = require('electron');
+            const result = await ipcRenderer.invoke('save-expression-config', this.allCharacterConfigs);
+
+            if (result.success) {
+                console.log('表情配置已成功保存到文件');
             } else {
-                console.warn('服务器保存失败，尝试保存到本地存储');
+                console.warn('文件保存失败，尝试保存到本地存储: ', result.error);
                 // 备选方案：保存到localStorage作为临时存储
                 if (typeof localStorage !== 'undefined') {
                     localStorage.setItem('expressionConfigs', JSON.stringify(this.allCharacterConfigs));
                     console.log('配置已保存到本地存储');
                 }
             }
-            
+
         } catch (error) {
             console.error('保存表情配置失败:', error);
             // 备选方案：保存到localStorage作为临时存储

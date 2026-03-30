@@ -22,74 +22,47 @@ function setLogConfig(config) {
 
 // 终端日志记录函数 - 普通日志
 function logToTerminal(level, message) {
-    const formattedMsg = `[${level.toUpperCase()}] ${message}`;
-
-    // 根据配置决定是否输出到控制台
-    if (logConfig.show_console) {
-        const shouldShow = (
-            (level === 'debug' && logConfig.show_debug) ||
-            (level === 'info' && logConfig.show_info) ||
-            (level === 'warn' && logConfig.show_warn) ||
-            (level === 'error' && logConfig.show_error)
-        );
-
-        if (shouldShow) {
-            if (level === 'error') {
-                console.error(message);
-            } else if (level === 'warn') {
-                console.warn(message);
-            } else {
-                console.log(message);
-            }
-        }
-    }
-
-    // 根据配置决定是否写入文件
-    if (logConfig.write_to_file) {
-        try {
-            const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
-            fs.appendFileSync(logPath, formattedMsg + '\n', 'utf8');
-        } catch (e) {
-            console.error('写入日志文件失败:', e.message);
-            console.error('日志路径:', logPath);
-        }
+    // 🔥 优化：由于console已经被hook拦截自动写入文件，这里只需要调用console即可
+    // 不再重复写入文件，避免日志重复（修复每条日志出现两次的问题）
+    switch (level) {
+        case 'debug':
+            console.debug(message);
+            break;
+        case 'info':
+            console.info(message);
+            break;
+        case 'warn':
+            console.warn(message);
+            break;
+        case 'error':
+            console.error(message);
+            break;
+        default:
+            console.log(message);
+            break;
     }
 }
 
 // 工具日志记录函数 - 专用于工具调用相关日志
 function logToolAction(level, message) {
-    // 添加 [TOOL] 标记，方便UI区分
-    const formattedMsg = `[${level.toUpperCase()}][TOOL] ${message}`;
-
-    // 根据配置决定是否输出到控制台
-    if (logConfig.show_console) {
-        const shouldShow = (
-            (level === 'debug' && logConfig.show_debug) ||
-            (level === 'info' && logConfig.show_info) ||
-            (level === 'warn' && logConfig.show_warn) ||
-            (level === 'error' && logConfig.show_error)
-        );
-
-        if (shouldShow) {
-            if (level === 'error') {
-                console.error(`[TOOL] ${message}`);
-            } else if (level === 'warn') {
-                console.warn(`[TOOL] ${message}`);
-            } else {
-                console.log(`[TOOL] ${message}`);
-            }
-        }
-    }
-
-    // 根据配置决定是否写入文件
-    if (logConfig.write_to_file) {
-        try {
-            const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
-            fs.appendFileSync(logPath, formattedMsg + '\n', 'utf8');
-        } catch (e) {
-            console.error('写入日志文件失败:', e.message);
-            console.error('日志路径:', logPath);
-        }
+    // 🔥 优化：由于console已经被hook拦截自动写入文件，这里只需要调用console即可
+    const prefixedMessage = `[TOOL] ${message}`;
+    switch (level) {
+        case 'debug':
+            console.debug(prefixedMessage);
+            break;
+        case 'info':
+            console.info(prefixedMessage);
+            break;
+        case 'warn':
+            console.warn(prefixedMessage);
+            break;
+        case 'error':
+            console.error(prefixedMessage);
+            break;
+        default:
+            console.log(prefixedMessage);
+            break;
     }
 }
 
@@ -180,6 +153,14 @@ function hookConsoleLogging() {
     // 将多个参数转换为字符串
     function formatArgs(args) {
         return args.map(arg => {
+            if (arg instanceof Error) {
+                // 🔥 特殊处理 Error 对象：包含堆栈信息
+                let result = String(arg);
+                if (arg.stack) {
+                    result += '\n' + arg.stack;
+                }
+                return result;
+            }
             if (typeof arg === 'object') {
                 try {
                     return JSON.stringify(arg, null, 2);
