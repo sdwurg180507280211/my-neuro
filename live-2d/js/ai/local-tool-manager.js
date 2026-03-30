@@ -36,8 +36,8 @@ class LocalToolManager {
         const files = fs.readdirSync(toolsDir);
 
         files.forEach(file => {
-            // 跳过非JavaScript文件和server.js主文件
-            if (!file.endsWith('.js') || file === 'server.js') {
+            // 跳过非JavaScript文件和index.js/server.js主文件
+            if (!file.endsWith('.js') || file === 'server.js' || file === 'index.js') {
                 return;
             }
 

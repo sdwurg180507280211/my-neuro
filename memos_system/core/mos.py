@@ -198,8 +198,10 @@ class MOS:
                 model_path = os.path.join(
                     os.path.dirname(__file__), '..', model_path
                 )
-            
-            self.embedder = SentenceTransformer(model_path)
+
+            # 使用 strict=False 忽略模型中不匹配的键（如 embeddings.position_ids）
+            # 这可以消除 UNEXPECTED 警告，不影响功能使用
+            self.embedder = SentenceTransformer(model_path, model_kwargs={"strict": False})
             
             if torch.cuda.is_available():
                 self.embedder = self.embedder.to('cuda')

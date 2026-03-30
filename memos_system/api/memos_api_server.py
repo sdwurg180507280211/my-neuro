@@ -96,7 +96,9 @@ async def startup_event():
         # 加载 embedding 模型
         print("📦 加载 Embedding 模型: ../../full-hub/rag-hub")
         rag_model_path = os.path.join(os.path.dirname(__file__), "..", "..", "full-hub", "rag-hub")
-        embedding_model = SentenceTransformer(rag_model_path)
+        # 使用 strict=False 忽略模型中不匹配的键（如 embeddings.position_ids）
+        # 这可以消除 UNEXPECTED 警告，不影响功能使用
+        embedding_model = SentenceTransformer(rag_model_path, model_kwargs={"strict": False})
         
         # 使用 GPU 加速
         if torch.cuda.is_available():
