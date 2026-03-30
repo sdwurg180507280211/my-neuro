@@ -172,6 +172,23 @@ function hookConsoleLogging() {
         }).join(' ');
     }
 
+    // 🔥 每次启动清空日志文件，避免累积旧日志
+    function clearLogFile() {
+        if (!logConfig.write_to_file) return;
+        try {
+            const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
+            // 检查文件存在就清空
+            if (fs.existsSync(logPath)) {
+                fs.writeFileSync(logPath, '', 'utf8');
+            }
+        } catch (e) {
+            // 静默失败，不影响启动
+        }
+    }
+
+    // 启动时清空日志
+    clearLogFile();
+
     // 写入文件的通用函数
     function writeToFile(level, args) {
         if (!logConfig.write_to_file) return;
