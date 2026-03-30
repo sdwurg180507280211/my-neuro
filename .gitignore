@@ -24,3 +24,4 @@ memos_system/data/qdrant/
 .envrc
 
 memos_system/config/memos_config.json
+live-2d/config.json
