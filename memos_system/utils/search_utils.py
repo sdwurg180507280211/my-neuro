@@ -20,11 +20,11 @@ except ImportError:
 
 class BM25Searcher:
     """BM25 关键词搜索器"""
-    
+
     def __init__(self, tokenizer=None):
         """
         初始化 BM25 搜索器
-        
+
         Args:
             tokenizer: 分词函数，默认使用空格分词
         """
@@ -32,6 +32,7 @@ class BM25Searcher:
         self.bm25 = None
         self.documents = []
         self.doc_ids = []
+        self._tokenized_cache = []  # 缓存分词结果，避免增量更新时重复分词
     
     def _default_tokenizer(self, text: str) -> List[str]:
         """默认分词器（简单空格分词 + 中文字符分割）"""
@@ -62,7 +63,7 @@ class BM25Searcher:
     ):
         """
         构建 BM25 索引
-        
+
         Args:
             documents: 文档列表
             content_field: 内容字段名
@@ -71,16 +72,25 @@ class BM25Searcher:
         if not BM25_AVAILABLE:
             logger.warning("BM25 不可用")
             return
-        
+
         self.documents = documents
         self.doc_ids = [doc.get(id_field, str(i)) for i, doc in enumerate(documents)]
-        
+
+        if len(documents) == 0:
+            # 空文档列表，不初始化 BM25，避免 division by zero
+            self.bm25 = None
+            self._tokenized_cache = []
+            logger.info("BM25 索引构建完成：当前无文档，等待添加后再初始化")
+            return
+
         # 分词
         tokenized_docs = [
             self.tokenizer(doc.get(content_field, ''))
             for doc in documents
         ]
-        
+
+        # 缓存分词结果供增量更新使用
+        self._tokenized_cache = tokenized_docs
         self.bm25 = BM25Okapi(tokenized_docs)
         logger.info(f"BM25 索引构建完成，共 {len(documents)} 个文档")
     
@@ -141,11 +151,25 @@ class BM25Searcher:
         
         # 重建索引（BM25Okapi 不支持增量更新，需要重建）
         if rebuild:
-            tokenized_docs = [
-                self.tokenizer(doc.get('content', ''))
-                for doc in self.documents
-            ]
-            self.bm25 = BM25Okapi(tokenized_docs)
+            if len(self.documents) == 0:
+                self.bm25 = None
+                self._tokenized_cache = []
+            else:
+                # 利用缓存避免重复分词，只对新添加的文档分词
+                if not self._tokenized_cache:
+                    # 缓存为空，全部分词
+                    tokenized_docs = [
+                        self.tokenizer(doc.get('content', ''))
+                        for doc in self.documents
+                    ]
+                else:
+                    # 缓存已有，只添加新文档的分词结果
+                    tokenized_docs = self._tokenized_cache
+                    new_tokens = self.tokenizer(content)
+                    tokenized_docs.append(new_tokens)
+                # 更新缓存并重建
+                self._tokenized_cache = tokenized_docs
+                self.bm25 = BM25Okapi(tokenized_docs)
             logger.debug(f"BM25 索引已更新，共 {len(self.documents)} 个文档")
     
     def add_documents_batch(
@@ -174,12 +198,27 @@ class BM25Searcher:
                 added += 1
         
         if added > 0:
-            # 重建索引
-            tokenized_docs = [
-                self.tokenizer(doc.get(content_field, ''))
-                for doc in self.documents
-            ]
-            self.bm25 = BM25Okapi(tokenized_docs)
+            # 重建索引，利用缓存避免重复分词
+            if len(self.documents) == 0:
+                self.bm25 = None
+                self._tokenized_cache = []
+            else:
+                if not self._tokenized_cache:
+                    # 缓存为空，全部分词
+                    tokenized_docs = [
+                        self.tokenizer(doc.get(content_field, ''))
+                        for doc in self.documents
+                    ]
+                else:
+                    # 缓存已有，只对新增的文档分词
+                    tokenized_docs = self._tokenized_cache
+                    # 只处理新增的最后added个文档
+                    for new_doc in self.documents[-added:]:
+                        new_tokens = self.tokenizer(new_doc.get(content_field, ''))
+                        tokenized_docs.append(new_tokens)
+                # 更新缓存并重建
+                self._tokenized_cache = tokenized_docs
+                self.bm25 = BM25Okapi(tokenized_docs)
             logger.info(f"BM25 索引批量更新，新增 {added} 个文档，共 {len(self.documents)} 个")
     
     def is_available(self) -> bool:
@@ -279,7 +318,7 @@ class HybridSearcher:
                 results_map[doc_id]['data'] = result
         
         # 2. BM25 搜索
-        if use_bm25 and self._bm25_indexed:
+        if use_bm25 and self._bm25_indexed and self.bm25_searcher.is_available():
             bm25_results = self.bm25_searcher.search(query, top_k * 2)
             
             # 归一化 BM25 分数

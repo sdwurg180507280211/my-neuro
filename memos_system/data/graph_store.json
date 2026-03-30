@@ -1,1 +1,122 @@
-{}
+{
+  "nodes": [
+    {
+      "id": "42dce95e-faad-4150-9af3-af521d46469f",
+      "entity_type": "person",
+      "name": "主人",
+      "properties": {
+        "description": "对话发起方用户"
+      },
+      "user_id": "feiniu_default",
+      "created_at": "2026-03-30T18:19:06.048147",
+      "updated_at": "2026-03-30T18:19:06.048159"
+    },
+    {
+      "id": "e8954a9c-0e08-4158-9115-3816bfe7e0fb",
+      "entity_type": "person",
+      "name": "肥牛",
+      "properties": {
+        "description": "对话接收方参与者"
+      },
+      "user_id": "feiniu_default",
+      "created_at": "2026-03-30T18:19:06.048920",
+      "updated_at": "2026-03-30T18:19:06.048930"
+    },
+    {
+      "id": "cc52bae1-dfa0-4299-b570-df55e7d7fc11",
+      "entity_type": "concept",
+      "name": "聊天记录",
+      "properties": {
+        "description": "主人与肥牛的对话记录"
+      },
+      "user_id": "feiniu_default",
+      "created_at": "2026-03-30T18:19:06.049476",
+      "updated_at": "2026-03-30T18:19:06.049485"
+    },
+    {
+      "id": "98ce3cef-4f2e-4c9c-b137-5d31911acc3e",
+      "entity_type": "person",
+      "name": "用户",
+      "properties": {
+        "description": "文本提到的主人"
+      },
+      "user_id": "feiniu_default",
+      "created_at": "2026-03-30T18:28:08.504228",
+      "updated_at": "2026-03-30T18:28:08.504238"
+    },
+    {
+      "id": "f335256f-2fae-466e-b4ed-55d3b500468b",
+      "entity_type": "time",
+      "name": "今天",
+      "properties": {
+        "description": "用户聊天的时间"
+      },
+      "user_id": "feiniu_default",
+      "created_at": "2026-03-30T18:28:08.504920",
+      "updated_at": "2026-03-30T18:28:08.504927"
+    },
+    {
+      "id": "546fe275-e4df-4878-ad27-5c3f4400524e",
+      "entity_type": "event",
+      "name": "聊天说嗯和哦气人",
+      "properties": {
+        "description": "用户今天聊天的事件"
+      },
+      "user_id": "feiniu_default",
+      "created_at": "2026-03-30T18:28:08.505425",
+      "updated_at": "2026-03-30T18:28:08.505432"
+    }
+  ],
+  "edges": [
+    {
+      "source": "42dce95e-faad-4150-9af3-af521d46469f",
+      "target": "e8954a9c-0e08-4158-9115-3816bfe7e0fb",
+      "relation_type": "KNOWS",
+      "properties": {
+        "description": "主人认识肥牛，二人正在聊天"
+      },
+      "created_at": "2026-03-30T18:21:28.814440"
+    },
+    {
+      "source": "e8954a9c-0e08-4158-9115-3816bfe7e0fb",
+      "target": "cc52bae1-dfa0-4299-b570-df55e7d7fc11",
+      "relation_type": "KNOWS",
+      "properties": {
+        "description": "肥牛知晓主人和自己一共三条聊天记录"
+      },
+      "created_at": "2026-03-30T18:19:06.051172"
+    },
+    {
+      "source": "e8954a9c-0e08-4158-9115-3816bfe7e0fb",
+      "target": "42dce95e-faad-4150-9af3-af521d46469f",
+      "relation_type": "KNOWS",
+      "properties": {
+        "description": "肥牛认识主人，二人正在对话"
+      },
+      "created_at": "2026-03-30T18:21:28.815112"
+    },
+    {
+      "source": "98ce3cef-4f2e-4c9c-b137-5d31911acc3e",
+      "target": "f335256f-2fae-466e-b4ed-55d3b500468b",
+      "relation_type": "RELATED_TO",
+      "properties": {
+        "description": "用户在今天进行聊天"
+      },
+      "created_at": "2026-03-30T18:28:08.506019"
+    },
+    {
+      "source": "98ce3cef-4f2e-4c9c-b137-5d31911acc3e",
+      "target": "546fe275-e4df-4878-ad27-5c3f4400524e",
+      "relation_type": "PART_OF",
+      "properties": {
+        "description": "聊天说嗯和哦气人是用户的行为事件"
+      },
+      "created_at": "2026-03-30T18:28:08.506495"
+    }
+  ],
+  "metadata": {
+    "saved_at": "2026-03-30T18:28:08.506506",
+    "node_count": 6,
+    "edge_count": 5
+  }
+}

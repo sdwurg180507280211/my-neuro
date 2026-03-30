@@ -1,5 +1,5 @@
 const { Plugin } = require('../../../js/core/plugin-base.js');
-const { MemosClient } = require('./memos-client.js');
+const { MemosClient } = require('../../../js/ai/memos-client.js');
 const { MemosTools } = require('./tools.js');
 const fs = require('fs');
 const path = require('path');
@@ -10,7 +10,8 @@ class MemosPlugin extends Plugin {
 
     async onInit() {
         const cfg = this.context.getPluginFileConfig();
-        this.client = new MemosClient(cfg);
+        // MemosClient 期望 { memos: config } 结构
+        this.client = new MemosClient({ memos: cfg });
         this.tools = new MemosTools(this.client.apiUrl);
         this._cfg = cfg;
     }

@@ -1,5 +1,6 @@
 // memos-client.js - MemOS 客户端封装
 const axios = require('axios');
+const { logToTerminal } = require('../api-utils.js');
 
 class MemosClient {
     constructor(config) {
@@ -8,18 +9,20 @@ class MemosClient {
         this.autoInject = config?.memos?.auto_inject !== false;
         this.injectTopK = config?.memos?.inject_top_k || 3;
         this.similarityThreshold = config?.memos?.similarity_threshold || 0.6;
-        
+        this.userId = config?.memos?.user_id || 'feiniu_default';
+
         // 🔥 新增：对话累积配置
         this.saveInterval = config?.memos?.save_interval || 10;  // 每10轮保存一次
         this.conversationBuffer = [];  // 对话缓存
         this.roundCount = 0;  // 当前轮数计数
-        
-        console.log(`MemOS 客户端初始化: ${this.enabled ? '启用' : '禁用'}`);
+
+        logToTerminal('info', `MemOS 客户端初始化: ${this.enabled ? '启用' : '禁用'}`);
         if (this.enabled) {
-            console.log(`  - API 地址: ${this.apiUrl}`);
-            console.log(`  - 自动注入: ${this.autoInject}`);
-            console.log(`  - 检索数量: ${this.injectTopK}`);
-            console.log(`  - 保存间隔: 每 ${this.saveInterval} 轮`);
+            logToTerminal('info', `  - API 地址: ${this.apiUrl}`);
+            logToTerminal('info', `  - 用户ID: ${this.userId}`);
+            logToTerminal('info', `  - 自动注入: ${this.autoInject}`);
+            logToTerminal('info', `  - 检索数量: ${this.injectTopK}`);
+            logToTerminal('info', `  - 保存间隔: 每 ${this.saveInterval} 轮`);
         }
     }
 
@@ -38,7 +41,7 @@ class MemosClient {
             const response = await axios.post(`${this.apiUrl}/search`, {
                 query: query,
                 top_k: topK || this.injectTopK,
-                user_id: "feiniu_default",
+                user_id: this.userId,
                 similarity_threshold: this.similarityThreshold  // 🔥 传递相似度阈值
             }, {
                 timeout: 3000  // 3秒超时
@@ -47,15 +50,15 @@ class MemosClient {
             // 🔥 添加调试日志
             const memories = response.data.memories || [];
             if (memories.length > 0) {
-                console.log(`🧠 MemOS 搜索结果: ${memories.length} 条相关记忆`);
+                logToTerminal('info', `🧠 MemOS 搜索结果: ${memories.length} 条相关记忆`);
                 memories.forEach((m, i) => {
-                    console.log(`  ${i+1}. [相似度:${m.similarity}] ${m.content.substring(0, 50)}...`);
+                    logToTerminal('info', `  ${i+1}. [相似度:${m.similarity}] ${m.content.substring(0, 50)}...`);
                 });
             }
 
             return memories;
         } catch (error) {
-            console.error('MemOS 搜索失败:', error.message);
+            logToTerminal('error', `MemOS 搜索失败: ${error.message}`);
             return [];
         }
     }
@@ -73,15 +76,15 @@ class MemosClient {
         try {
             const response = await axios.post(`${this.apiUrl}/add`, {
                 messages: messages,
-                user_id: "feiniu_default"
+                user_id: this.userId
             }, {
                 timeout: 10000  // 增加超时，因为可能处理多条
             });
 
-            console.log('✅ 记忆已添加到 MemOS');
+            logToTerminal('info', '✅ 记忆已添加到 MemOS');
             return response.data;
         } catch (error) {
-            console.error('MemOS 添加记忆失败:', error.message);
+            logToTerminal('error', `MemOS 添加记忆失败: ${error.message}`);
             return { status: 'error', message: error.message };
         }
     }
@@ -100,27 +103,27 @@ class MemosClient {
         this.conversationBuffer.push(...messages);
         this.roundCount++;
 
-        console.log(`📝 对话已缓存 (${this.roundCount}/${this.saveInterval} 轮)`);
+        logToTerminal('info', `📝 对话已缓存 (${this.roundCount}/${this.saveInterval} 轮)`);
 
         // 检查是否达到保存间隔
         if (this.roundCount >= this.saveInterval) {
-            console.log(`🧠 达到 ${this.saveInterval} 轮，开始保存记忆...`);
-            
+            logToTerminal('info', `🧠 达到 ${this.saveInterval} 轮，开始保存记忆...`);
+
             try {
                 // 发送累积的所有对话
                 const result = await this.add(this.conversationBuffer);
-                
+
                 // 清空缓存和计数器
                 this.conversationBuffer = [];
                 this.roundCount = 0;
-                
-                return { 
-                    status: 'saved', 
+
+                return {
+                    status: 'saved',
                     message: `已保存 ${this.saveInterval} 轮对话`,
-                    result 
+                    result
                 };
             } catch (error) {
-                console.error('批量保存记忆失败:', error.message);
+                logToTerminal('error', `批量保存记忆失败: ${error.message}`);
                 return { status: 'error', message: error.message };
             }
         }
@@ -141,23 +144,23 @@ class MemosClient {
             return { status: 'empty' };
         }
 
-        console.log(`🧠 强制保存缓存的 ${this.roundCount} 轮对话...`);
-        
+        logToTerminal('info', `🧠 强制保存缓存的 ${this.roundCount} 轮对话...`);
+
         try {
             const result = await this.add(this.conversationBuffer);
-            
+
             // 清空缓存
             const savedRounds = this.roundCount;
             this.conversationBuffer = [];
             this.roundCount = 0;
-            
-            return { 
-                status: 'flushed', 
+
+            return {
+                status: 'flushed',
                 message: `已保存 ${savedRounds} 轮对话`,
-                result 
+                result
             };
         } catch (error) {
-            console.error('强制保存失败:', error.message);
+            logToTerminal('error', `强制保存失败: ${error.message}`);
             return { status: 'error', message: error.message };
         }
     }
@@ -237,7 +240,7 @@ class MemosClient {
             });
             return response.data.status === 'healthy';
         } catch (error) {
-            console.warn('MemOS 服务不可用:', error.message);
+            logToTerminal('warn', `MemOS 服务不可用: ${error.message}`);
             return false;
         }
     }
