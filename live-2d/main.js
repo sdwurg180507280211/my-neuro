@@ -10,7 +10,7 @@ const screenshot = require('screenshot-desktop');
 const configPath = path.join(app.getAppPath(), 'config.json');
 
 // Live2D模型优先级配置（Python程序会修改这个列表来切换模型）
-const priorityFolders = ['feiniu', 'huohuo', 'fuxuan', 'kafka', '肥牛', 'jingliu', 'robin', 'jian', 'yangyang', 'nicole', 'rice', 'Hiyouri', 'Default', 'Main'];
+const priorityFolders = ['feiniu', 'rice', 'huohuo', 'fuxuan', 'kafka', '肥牛', 'jingliu', 'robin', 'jian', 'yangyang', 'nicole', 'Hiyouri', 'Default', 'Main'];
 
 // 市场窗口引用
 let marketWindow = null;

@@ -108,6 +108,24 @@ class ModelInteractionController {
                 );
             }
 
+            // 检查是否在控制台按钮内
+            const consoleContainer = document.getElementById('console-btn-container');
+            let isOverConsoleBtn = false;
+            if (consoleContainer) {
+                const consoleRect = consoleContainer.getBoundingClientRect();
+                const consoleLeftInPixi = (consoleRect.left - canvasRect.left) * (pixiView.width / canvasRect.width);
+                const consoleRightInPixi = (consoleRect.right - canvasRect.left) * (pixiView.width / canvasRect.width);
+                const consoleTopInPixi = (consoleRect.top - canvasRect.top) * (pixiView.height / canvasRect.height);
+                const consoleBottomInPixi = (consoleRect.bottom - canvasRect.top) * (pixiView.height / canvasRect.height);
+
+                isOverConsoleBtn = (
+                    point.x >= consoleLeftInPixi &&
+                    point.x <= consoleRightInPixi &&
+                    point.y >= consoleTopInPixi &&
+                    point.y <= consoleBottomInPixi
+                );
+            }
+
             // 检查是否在角色选择面板内
             const charPanel = document.getElementById('character-panel');
             let isOverCharPanel = false;
@@ -135,7 +153,7 @@ class ModelInteractionController {
             );
 
 
-            return isOverModel || isOverChat || isOverMarketBtn || isOverCharSwitchBtn || isOverCharPanel;
+            return isOverModel || isOverChat || isOverMarketBtn || isOverCharSwitchBtn || isOverConsoleBtn || isOverCharPanel;
         };
 
 
@@ -301,6 +319,27 @@ class ModelInteractionController {
             });
 
             charSwitchContainer.addEventListener('mouseleave', () => {
+                setTimeout(() => {
+                    if (!this.model.containsPoint(this.app.renderer.plugins.interaction.mouse.global)) {
+                        ipcRenderer.send('set-ignore-mouse-events', {
+                            ignore: true,
+                            options: { forward: true }
+                        });
+                    }
+                }, 100);
+            });
+        }
+
+        // 控制台按钮的鼠标事件监听
+        const consoleContainer = document.getElementById('console-btn-container');
+        if (consoleContainer) {
+            consoleContainer.addEventListener('mouseenter', () => {
+                ipcRenderer.send('set-ignore-mouse-events', {
+                    ignore: false
+                });
+            });
+
+            consoleContainer.addEventListener('mouseleave', () => {
                 setTimeout(() => {
                     if (!this.model.containsPoint(this.app.renderer.plugins.interaction.mouse.global)) {
                         ipcRenderer.send('set-ignore-mouse-events', {

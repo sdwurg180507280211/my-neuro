@@ -237,13 +237,9 @@ function closeCharacterPanel() {
 
 // 角色选择器按钮事件绑定
 document.addEventListener('DOMContentLoaded', () => {
-    // 商店按钮
-    const marketBtn = document.getElementById('market-btn');
-    if (marketBtn) {
-        marketBtn.addEventListener('click', () => {
-            ipcRenderer.send('open-market');
-        });
-    }
+    // 初始化各个按钮
+    initMarketButton();
+    initConsoleButton();
 
     // 角色切换按钮
     const charSwitchBtn = document.getElementById('character-switch-btn');
@@ -251,14 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
         charSwitchBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleCharacterPanel();
-        });
-    }
-
-    // 控制台按钮
-    const consoleBtn = document.getElementById('console-btn');
-    if (consoleBtn) {
-        consoleBtn.addEventListener('click', () => {
-            ipcRenderer.send('open-console');
         });
     }
 
