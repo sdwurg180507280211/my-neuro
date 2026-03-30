@@ -16,7 +16,20 @@ let logConfig = {
 // 更新日志配置
 function setLogConfig(config) {
     if (config && config.logging) {
+        const oldWrite = logConfig.write_to_file;
         logConfig = { ...logConfig, ...config.logging };
+
+        // 🔥 配置更新后，如果 write_to_file 刚开启，清空日志文件
+        if (!oldWrite && logConfig.write_to_file) {
+            try {
+                const logPath = path.join(__dirname, '..', logConfig.log_file_path || 'runtime.log');
+                if (fs.existsSync(logPath)) {
+                    fs.writeFileSync(logPath, '', 'utf8');
+                }
+            } catch (e) {
+                // 静默失败
+            }
+        }
     }
 }
 
