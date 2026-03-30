@@ -672,72 +672,91 @@ body {
     animation: tool-bubble-slide-out 0.6s ease-out forwards;
 }
 
+/* ===== 左下角按钮组容器 ===== */
+.bottom-buttons-container {
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    z-index: 99999;
+    display: flex;
+    gap: 20px;
+    pointer-events: auto !important;
+}
+
+/* ===== 通用按钮样式 ===== */
+.bottom-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto !important;
+}
+
+.bottom-btn:hover {
+    transform: scale(1.15) rotate(10deg);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+}
+
+.bottom-btn:active {
+    transform: scale(0.95);
+}
+
+.bottom-btn.active {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
 /* ===== 商店按钮 ===== */
 #market-btn-container {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 9999;
+    position: static;
     pointer-events: auto;
 }
 
 #market-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: none;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 #market-btn:hover {
-    transform: scale(1.15) rotate(10deg);
     box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
-}
-
-#market-btn:active {
-    transform: scale(0.95);
 }
 
 /* ===== 角色切换按钮 ===== */
 #character-switcher-container {
-    position: fixed;
-    bottom: 20px;
-    left: 90px;
-    z-index: 9999;
+    position: static;
     pointer-events: auto;
 }
 
 #character-switch-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: none;
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
     box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 #character-switch-btn:hover {
-    transform: scale(1.15) rotate(-10deg);
     box-shadow: 0 6px 25px rgba(245, 87, 108, 0.6);
 }
 
-#character-switch-btn:active {
-    transform: scale(0.95);
+/* ===== 控制台按钮 ===== */
+#console-btn-container {
+    position: static;
+    pointer-events: auto;
+}
+
+#console-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+#console-btn:hover {
+    box-shadow: 0 6px 25px rgba(79, 172, 254, 0.6);
 }
 
 /* ===== 角色选择面板 ===== */
@@ -871,37 +890,3 @@ body {
 }
 
 
-/* ===== 商店按钮 ===== */
-#market-btn-container {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 99999;
-    pointer-events: auto !important;
-}
-
-#market-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: none;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: auto !important;
-}
-
-#market-btn:hover {
-    transform: scale(1.15) rotate(10deg);
-    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
-}
-
-#market-btn:active {
-    transform: scale(0.95);
-}

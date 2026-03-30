@@ -150,7 +150,6 @@ function enhanceSystemPrompt() {
 // 角色列表（与商店数据保持一致）
 const characterList = [
     { id: 'feiniu', name: '肥牛', desc: '傲娇系AI桌宠', icon: '🐮', tags: ['官方', '傲娇'] },
-    { id: '肥牛', name: '肥牛', desc: '傲娇系AI桌宠', icon: '🐮', tags: ['官方', '傲娇'] },
     { id: 'fuxuan', name: '符玄', desc: '星穹铁道——仙舟太卜司之首', icon: '🔮', tags: ['星穹铁道', '仙舟'] },
     { id: 'kafka', name: '卡芙卡', desc: '星穹铁道——星核猎手成员', icon: '🗡️', tags: ['星穹铁道', '人气王'] },
     { id: 'jingliu', name: '镜流', desc: '星穹铁道——云上五骁之一', icon: '⚔️', tags: ['星穹铁道', '剑首'] },
@@ -215,8 +214,10 @@ async function switchCharacter(characterId) {
 // 打开/关闭角色面板
 function toggleCharacterPanel() {
     const panel = document.getElementById('character-panel');
+    const btn = document.getElementById('character-switch-btn');
     if (panel.style.display === 'none' || panel.style.display === '') {
         panel.style.display = 'flex';
+        btn.classList.add('active');
         renderCharacterList();
     } else {
         closeCharacterPanel();
@@ -225,8 +226,12 @@ function toggleCharacterPanel() {
 
 function closeCharacterPanel() {
     const panel = document.getElementById('character-panel');
+    const btn = document.getElementById('character-switch-btn');
     if (panel) {
         panel.style.display = 'none';
+    }
+    if (btn) {
+        btn.classList.remove('active');
     }
 }
 
@@ -246,6 +251,14 @@ document.addEventListener('DOMContentLoaded', () => {
         charSwitchBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleCharacterPanel();
+        });
+    }
+
+    // 控制台按钮
+    const consoleBtn = document.getElementById('console-btn');
+    if (consoleBtn) {
+        consoleBtn.addEventListener('click', () => {
+            ipcRenderer.send('open-console');
         });
     }
 
@@ -293,9 +306,34 @@ function initMarketButton() {
     }
 }
 
+// 控制台按钮功能
+function initConsoleButton() {
+    const consoleBtnContainer = document.getElementById('console-btn-container');
+    const consoleBtn = document.getElementById('console-btn');
+
+    // 根据配置显示/隐藏控制台按钮
+    if (config && config.ui && config.ui.show_console_button === false) {
+        if (consoleBtnContainer) {
+            consoleBtnContainer.style.display = 'none';
+        }
+    } else {
+        if (consoleBtnContainer) {
+            consoleBtnContainer.style.display = 'block';
+        }
+    }
+
+    if (consoleBtn) {
+        consoleBtn.addEventListener('click', () => {
+            ipcRenderer.send('open-console');
+        });
+    }
+}
+
 // DOM 可能已经加载完成，直接绑定
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initMarketButton);
+    document.addEventListener('DOMContentLoaded', initConsoleButton);
 } else {
     initMarketButton();
+    initConsoleButton();
 }

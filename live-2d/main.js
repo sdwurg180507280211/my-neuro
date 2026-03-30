@@ -10,7 +10,7 @@ const screenshot = require('screenshot-desktop');
 const configPath = path.join(app.getAppPath(), 'config.json');
 
 // Live2D模型优先级配置（Python程序会修改这个列表来切换模型）
-const priorityFolders = ['feiniu', '肥牛', 'jingliu', 'fuxuan', 'kafka', 'robin', 'huohuo', 'jian', 'yangyang', 'nicole', 'rice', 'Hiyouri', 'Default', 'Main'];
+const priorityFolders = ['feiniu', 'huohuo', 'fuxuan', 'kafka', '肥牛', 'jingliu', 'robin', 'jian', 'yangyang', 'nicole', 'rice', 'Hiyouri', 'Default', 'Main'];
 
 // 市场窗口引用
 let marketWindow = null;
@@ -53,7 +53,7 @@ function createWindow () {
     win.setPosition(0, 0)
     win.loadFile('index.html')
 
-    // 打开开发者工具用于调试
+    // 默认不打开开发者工具，需要时通过左下角按钮打开
     win.webContents.openDevTools({ mode: 'detach' })
 
     win.on('minimize', (event) => {
@@ -329,6 +329,16 @@ ipcMain.on('open-market', () => {
 ipcMain.on('close-market', () => {
     if (marketWindow) {
         marketWindow.close();
+    }
+});
+
+// 打开/关闭开发者控制台的IPC处理器
+ipcMain.on('open-console', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win.webContents.isDevToolsOpened()) {
+        win.webContents.closeDevTools();
+    } else {
+        win.webContents.openDevTools({ mode: 'detach' });
     }
 });
 
