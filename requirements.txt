@@ -3,9 +3,13 @@
 fastapi
 uvicorn
 python-multipart
-# torch>=1.7.0  # 已注释，请手动安装CUDA版本
-# torchaudio    # 已注释，请手动安装CUDA版本
-numpy
+# PyTorch 锁定 2.4.0 版本（经过测试兼容良好）
+# conda-forge 仍为 macOS Intel (x86_64) 提供预编译包，安装命令：
+#   conda install -n my-neuro -y pytorch=2.4.0 pytorch-cpu torchvision torchaudio -c conda-forge
+torch==2.4.0
+torchaudio==2.4.0
+# numba 0.61.2 需要 numpy < 2.3.0，否则兼容性错误
+numpy<2.3.0
 funasr>=0.9.6
 websockets
 modelscope
