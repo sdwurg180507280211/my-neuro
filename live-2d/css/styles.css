@@ -675,11 +675,11 @@ body {
 /* ===== 左下角按钮组容器 ===== */
 .bottom-buttons-container {
     position: fixed;
-    bottom: 80px;
+    bottom: 20px;
     left: 20px;
     z-index: 99999;
     display: flex;
-    gap: 20px;
+    gap: 12px;
     pointer-events: auto !important;
 }
 
@@ -762,10 +762,10 @@ body {
 /* ===== 角色选择面板 ===== */
 .character-panel {
     position: fixed;
-    bottom: 90px;
+    bottom: 80px;
     left: 20px;
     width: 320px;
-    max-height: 500px;
+    max-height: calc(100vh - 120px);
     background: white;
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -812,7 +812,29 @@ body {
     padding: 12px;
     overflow-y: auto;
     flex: 1;
-    max-height: 420px;
+    max-height: calc(100vh - 220px);
+    /* 美化滚动条 */
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+/* Webkit 浏览器滚动条美化 */
+.character-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.character-list::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.character-list::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 3px;
+}
+
+.character-list::-webkit-scrollbar-thumb:hover {
+    background: #aaaaaa;
 }
 
 .character-item {
