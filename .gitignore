@@ -37,8 +37,9 @@ UserData/
 # 运行时记忆数据（含对话历史，不入库）
 memos_system/data/
 
-# 用户配置（含密钥）
+# 用户配置 / 用户记忆（含密钥，本地私有）
 live-2d/用户配置.json
+live-2d/用户记忆.json
 
 # WorkBuddy 项目记忆
 .workbuddy/
