@@ -108,7 +108,7 @@ class TTSRequestHandler {
     }
 
     // 将文本转换为语音
-    async convertTextToSpeech(text) {
+    async convertTextToSpeech(text, onLocalFrame) {
         const requestId = ++this.requestIdCounter;
         const controller = new AbortController();
         const requestInfo = { id: requestId, controller };
@@ -166,30 +166,54 @@ class TTSRequestHandler {
                     await this.handleTTSError(response, '云端TTS');
                 }
                 return await response.blob();
-            } else {
-                // 本地模式或统一网关模式
-                const headers = { 'Content-Type': 'application/json' };
+                } else {
+                    // 本地模式或统一网关模式
+                    const headers = { 'Content-Type': 'application/json' };
 
-                // 如果使用统一网关，添加 X-API-Key
-                if (this.useGateway && this.apiKey) {
-                    headers['X-API-Key'] = this.apiKey;
+                    // 如果使用统一网关，添加 X-API-Key
+                    if (this.useGateway && this.apiKey) {
+                        headers['X-API-Key'] = this.apiKey;
+                    }
+
+                    const response = await fetch(this.ttsUrl, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify({
+                            text: finalTextForTTS,
+                            text_language: this.language
+                        }),
+                        signal: controller.signal
+                    });
+
+                    if (!response.ok) {
+                        await this.handleTTSError(response, this.useGateway ? '云端肥牛网关TTS' : '本地TTS');
+                        return null;
+                    }
+
+                    // 本地流式 TTS：桥接层按句返回长度前缀帧 [4字节长度][WAV]，
+                    // 逐帧回调给播放队列，实现边生成边播（首句最快 ~1-2s 出声）。
+                    if (onLocalFrame && response.body) {
+                        const reader = response.body.getReader();
+                        let buf = new Uint8Array(0);
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            const merged = new Uint8Array(buf.length + value.length);
+                            merged.set(buf, 0);
+                            merged.set(value, buf.length);
+                            buf = merged;
+                            while (buf.length >= 4) {
+                                const len = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+                                if (buf.length < 4 + len) break;
+                                const wav = buf.subarray(4, 4 + len);
+                                onLocalFrame(new Blob([wav], { type: 'audio/wav' }));
+                                buf = buf.subarray(4 + len);
+                            }
+                        }
+                        return null; // 帧已通过回调入队
+                    }
+                    return await response.blob(); // 兜底：不支持流的客户端
                 }
-
-                const response = await fetch(this.ttsUrl, {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify({
-                        text: finalTextForTTS,
-                        text_language: this.language
-                    }),
-                    signal: controller.signal
-                });
-
-                if (!response.ok) {
-                    await this.handleTTSError(response, this.useGateway ? '云端肥牛网关TTS' : '本地TTS');
-                }
-                return await response.blob();
-            }
         } catch (error) {
             if (error.name === 'AbortError') return null;
             console.error('TTS转换错误:', error);

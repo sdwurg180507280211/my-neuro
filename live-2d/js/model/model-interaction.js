@@ -174,8 +174,17 @@ class ModelInteractionController {
         // 鼠标移动事件
         this.model.on('mousemove', (e) => {
             if (this.isDragging) {
-                const newX = e.data.global.x - this.dragOffset.x;
-                const newY = e.data.global.y - this.dragOffset.y;
+                let newX = e.data.global.x - this.dragOffset.x;
+                let newY = e.data.global.y - this.dragOffset.y;
+
+                // 边界检查，确保模型不会完全跑出屏幕
+                const modelWidth = this.model.width;
+                const modelHeight = this.model.height;
+                const margin = 100; // 保留至少100px在屏幕内
+
+                newX = Math.max(-modelWidth + margin, Math.min(newX, window.innerWidth * 2 - margin));
+                newY = Math.max(-modelHeight + margin, Math.min(newY, window.innerHeight * 2 - margin));
+
                 this.model.position.set(newX, newY);
                 this.updateInteractionArea();
             }
@@ -465,19 +474,30 @@ class ModelInteractionController {
         if (this.config && this.config.ui && this.config.ui.model_position && this.config.ui.model_position.remember_position) {
             const savedPos = this.config.ui.model_position;
             if (savedPos.x !== null && savedPos.y !== null) {
-                // 使用保存的位置（相对比例转换为绝对坐标）
-                this.model.x = savedPos.x * window.innerWidth;
-                this.model.y = savedPos.y * window.innerHeight;
-                console.log('加载保存的模型位置:', { x: this.model.x, y: this.model.y });
+                // 验证位置是否在合理范围内（-0.5 到 2.0 之间）
+                const isValidX = typeof savedPos.x === 'number' && savedPos.x >= -0.5 && savedPos.x <= 2.0;
+                const isValidY = typeof savedPos.y === 'number' && savedPos.y >= -0.5 && savedPos.y <= 2.0;
+
+                if (isValidX && isValidY) {
+                    // 使用保存的位置（相对比例转换为绝对坐标）
+                    this.model.x = savedPos.x * window.innerWidth;
+                    this.model.y = savedPos.y * window.innerHeight;
+                    console.log('加载保存的模型位置:', { x: this.model.x, y: this.model.y });
+                } else {
+                    // 位置不合理，使用默认位置
+                    console.warn('保存的模型位置不合理，使用默认位置:', savedPos);
+                    this.model.y = window.innerHeight * 0.8;
+                    this.model.x = window.innerWidth * 0.85;
+                }
             } else {
-                // 使用默认位置
+                // 使用默认位置 - 屏幕右下角
                 this.model.y = window.innerHeight * 0.8;
-                this.model.x = window.innerWidth * 1.35;
+                this.model.x = window.innerWidth * 0.85;
             }
         } else {
-            // 使用默认位置
+            // 使用默认位置 - 屏幕右下角
             this.model.y = window.innerHeight * 0.8;
-            this.model.x = window.innerWidth * 1.35;
+            this.model.x = window.innerWidth * 0.85;
         }
 
         this.updateInteractionArea();

@@ -83,7 +83,10 @@ class EnhancedTextProcessor {
 
                 const genSnapshot = this.abortGeneration;
                 try {
-                    const audioData = await this.requestHandler.convertTextToSpeech(segment);
+                    const audioData = await this.requestHandler.convertTextToSpeech(segment, (frameBlob) => {
+                        // 本地流式 TTS：每收到一句完整音频帧立即入队，由播放线程边收边播
+                        this.audioDataQueue.push({ audio: frameBlob, text: segment });
+                    });
 
                     // 如果中止代数已变化，说明请求属于旧一轮，直接丢弃结果
                     if (genSnapshot !== this.abortGeneration) {

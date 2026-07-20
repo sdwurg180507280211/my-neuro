@@ -138,7 +138,9 @@ async def startup_event():
     print("正在加载模型...")
 
     # 检查VAD模型目录是否存在
-    torch_hub_dir = os.path.join(MODEL_DIR, "torch_hub")
+    # 修复：download_vad_models() 把 VAD 下载到 CWD/model/torch_hub，
+    # 与 MODEL_DIR(asr-hub/model)/torch_hub 不一致，统一指向实际下载位置
+    torch_hub_dir = os.path.join(os.getcwd(), "model", "torch_hub")
     local_vad_path = os.path.join(torch_hub_dir, "snakers4_silero-vad_master")
 
     # 如果VAD模型目录不存在，则下载

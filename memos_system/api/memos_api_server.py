@@ -96,9 +96,10 @@ async def startup_event():
         # 加载 embedding 模型
         print("📦 加载 Embedding 模型: ../../full-hub/rag-hub")
         rag_model_path = os.path.join(os.path.dirname(__file__), "..", "..", "full-hub", "rag-hub")
-        # 使用 strict=False 忽略模型中不匹配的键（如 embeddings.position_ids）
-        # 这可以消除 UNEXPECTED 警告，不影响功能使用
-        embedding_model = SentenceTransformer(rag_model_path, model_kwargs={"strict": False})
+        # 注意：transformers>=5 已移除 BertModel 的 strict 参数，旧代码的 model_kwargs={"strict": False}
+        # 在新版下会报 "got an unexpected keyword argument 'strict'"。该参数仅用于消除 UNEXPECTED 警告，
+        # 新版默认容忍不匹配键（仅 warning），故直接移除即可，不影响功能。
+        embedding_model = SentenceTransformer(rag_model_path)
         
         # 使用 GPU 加速
         if torch.cuda.is_available():
