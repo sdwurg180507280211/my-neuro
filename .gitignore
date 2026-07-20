@@ -25,3 +25,20 @@ memos_system/data/qdrant/
 
 memos_system/config/memos_config.json
 live-2d/config.json
+
+# ===== 模型权重 / 大数据（本地私有，禁止推仓库）=====
+CharacterModels/
+GenieData/
+full-hub/model/
+full-hub/asr-hub/model/
+full-hub/rag-hub/
+UserData/
+
+# 运行时记忆数据（含对话历史，不入库）
+memos_system/data/
+
+# 用户配置（含密钥）
+live-2d/用户配置.json
+
+# WorkBuddy 项目记忆
+.workbuddy/
