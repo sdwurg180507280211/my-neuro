@@ -61,3 +61,8 @@ pyvis>=0.3.0
 transformers>=4.30.0
 
 markdown
+
+# TTS (本地语音合成, Genie/菲比)
+genie-tts==2.0.2
+# Genie 自带可视化 GUI 依赖
+PySide6
